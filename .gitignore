@@ -1,0 +1,13 @@
+# Build output
+/atomos
+/dist/
+*.exe
+
+# Go
+*.test
+*.out
+/vendor/
+
+# Local scratch
+/.scratch/
+*.tmp

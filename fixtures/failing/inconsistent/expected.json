@@ -1,0 +1,7 @@
+{
+  "verdict": "inconsistent",
+  "mode": "warn",
+  "blocked": false,
+  "expected_sha": "06419156a3d8298460edeb9ed421dfed93c0c5c7e10af4553f09317a8466f26d",
+  "actual_sha": "0000000000000000000000000000000000000000000000000000000000000"
+}

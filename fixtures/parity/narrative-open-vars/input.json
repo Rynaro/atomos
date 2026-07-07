@@ -1,0 +1,13 @@
+{
+  "task_state": "Verifying T3 tool-origin content surfaces on recall",
+  "narrative": "The successor session should treat this thread as continuing prior tool-originated work; nothing here was hand-authored.",
+  "open_vars": [
+    "Does the successor need to re-run the probe or just recall it?",
+    "Is contains_tool_origin sticky across further handoffs?"
+  ],
+  "session_id": "sess-narrative-ov",
+  "contains_tool_origin": true,
+  "ts": "20260707T185253Z",
+  "iso_ts": "2026-07-07T18:52:53Z",
+  "from_version": "2.2.0"
+}

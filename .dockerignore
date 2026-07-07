@@ -1,0 +1,11 @@
+.git
+.github
+dist
+*.md
+!README.md
+.gitignore
+.dockerignore
+docs
+fixtures
+scripts
+**/*_test.go

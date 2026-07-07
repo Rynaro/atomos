@@ -1,0 +1,65 @@
+{
+  "schema": "ramza/plan-state.v1",
+  "plan": "atomos-mcp-mvp",
+  "created_at": "2026-07-07T18:29:58Z",
+  "tier": "full",
+  "phase": "RS",
+  "phases_done": [
+    "RS"
+  ],
+  "rightsize": {
+    "score": 7,
+    "computed_tier": "full",
+    "inputs": {
+      "files_est": 25,
+      "new_dep": true,
+      "public_api": true,
+      "migration": false,
+      "security": true,
+      "novel": true,
+      "stakes": "med"
+    }
+  },
+  "refine_cycles": 0,
+  "skips": [],
+  "gates": [
+    {
+      "rubric": "confidence",
+      "total": 89.25,
+      "dims": {
+        "pattern_match": 90,
+        "requirement_clarity": 92,
+        "decomposition_stability": 85,
+        "constraint_compliance": 90
+      },
+      "verdict": "AUTO_PROCEED",
+      "at": "2026-07-07T18:33:31Z",
+      "label": "atomos-mcp-mvp"
+    }
+  ],
+  "amendments": [],
+  "declared_scope": [
+    "cmd/*",
+    "internal/*",
+    "fixtures/*",
+    "scripts/*",
+    ".github/*",
+    "docs/*",
+    "Dockerfile",
+    ".dockerignore",
+    "ATOMOS_VERSION",
+    "go.mod",
+    "go.sum",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    ".gitignore"
+  ],
+  "criteria_sha256": "678c084e3509c36a88ba4ea232256c8792662b09a86d85e45c616ac7d4688520",
+  "critic": {
+    "author": null,
+    "checker": null
+  },
+  "scope_declared_at": "2026-07-07T18:33:31Z",
+  "criteria_frozen_at": "2026-07-07T18:33:31Z"
+}

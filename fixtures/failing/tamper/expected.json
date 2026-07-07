@@ -1,0 +1,7 @@
+{
+  "verdict": "tamper",
+  "mode": "warn",
+  "blocked": false,
+  "expected_sha": "8f159808516eabf6ba25c109272ca532d6bd38b752548e59673ffd316331d555",
+  "actual_sha": "a0508100b04c6709e4fda943f24fff9bbd248c9944adb56e654ca1622650dfe2"
+}

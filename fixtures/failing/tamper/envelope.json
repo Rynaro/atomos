@@ -1,0 +1,35 @@
+{
+  "envelope_version": "2.0",
+  "message_id": "msg-fixture-tamper",
+  "thread_id": "fixture-tamper",
+  "parent_id": null,
+  "from": {
+    "eidolon": "atomos-fixtures",
+    "version": "0.1.0"
+  },
+  "to": {
+    "eidolon": "session_successor",
+    "version": "n/a"
+  },
+  "objective": "Tamper fixture: payload modified after envelope emission",
+  "performative": "INFORM",
+  "artifact": {
+    "kind": "ecm/handoff-brief@0.1",
+    "schema_version": "0.1",
+    "path": "payload.md",
+    "sha256": "8f159808516eabf6ba25c109272ca532d6bd38b752548e59673ffd316331d555",
+    "size_bytes": 36
+  },
+  "integrity": {
+    "method": "sha256",
+    "value": "8f159808516eabf6ba25c109272ca532d6bd38b752548e59673ffd316331d555"
+  },
+  "trace": {
+    "ts": "2026-07-07T00:00:00Z",
+    "host": "claude-code",
+    "model": "n/a",
+    "tier": "standard"
+  },
+  "topic_key": "session_handoff",
+  "contains_tool_origin": false
+}

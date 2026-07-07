@@ -1,0 +1,35 @@
+{
+  "envelope_version": "2.0",
+  "message_id": "msg-fixture-sibling-fallback",
+  "thread_id": "fixture-sibling-fallback",
+  "parent_id": null,
+  "from": {
+    "eidolon": "atomos-fixtures",
+    "version": "0.1.0"
+  },
+  "to": {
+    "eidolon": "session_successor",
+    "version": "n/a"
+  },
+  "objective": "Sibling-fallback fixture: artifact.path does not resolve directly; the sibling <envelope minus .envelope.json> is used",
+  "performative": "INFORM",
+  "artifact": {
+    "kind": "ecm/handoff-brief@0.1",
+    "schema_version": "0.1",
+    "path": "does-not-exist-directly.md",
+    "sha256": "530778056661417f15edf240bc5927b48b1044a022af628ee2bb8d15f6e059fe",
+    "size_bytes": 34
+  },
+  "integrity": {
+    "method": "sha256",
+    "value": "530778056661417f15edf240bc5927b48b1044a022af628ee2bb8d15f6e059fe"
+  },
+  "trace": {
+    "ts": "2026-07-07T00:00:00Z",
+    "host": "claude-code",
+    "model": "n/a",
+    "tier": "standard"
+  },
+  "topic_key": "session_handoff",
+  "contains_tool_origin": false
+}

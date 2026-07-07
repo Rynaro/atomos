@@ -1,0 +1,6 @@
+{
+  "verdict": "malformed",
+  "mode": "warn",
+  "blocked": false,
+  "missing_fields": ["to.eidolon", "integrity.value"]
+}

@@ -1,0 +1,34 @@
+{
+  "envelope_version": "2.0",
+  "message_id": "msg-fixture-unverifiable",
+  "thread_id": "fixture-unverifiable",
+  "parent_id": null,
+  "from": {
+    "eidolon": "atomos-fixtures",
+    "version": "0.1.0"
+  },
+  "to": {
+    "eidolon": "session_successor",
+    "version": "n/a"
+  },
+  "objective": "Unverifiable fixture: integrity.value is an unfilled PARENT_FILLS_* placeholder",
+  "performative": "INFORM",
+  "artifact": {
+    "kind": "ecm/handoff-brief@0.1",
+    "schema_version": "0.1",
+    "path": "payload.md",
+    "size_bytes": 43
+  },
+  "integrity": {
+    "method": "sha256",
+    "value": "PARENT_FILLS_SHA256"
+  },
+  "trace": {
+    "ts": "2026-07-07T00:00:00Z",
+    "host": "claude-code",
+    "model": "n/a",
+    "tier": "standard"
+  },
+  "topic_key": "session_handoff",
+  "contains_tool_origin": false
+}

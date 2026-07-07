@@ -1,0 +1,28 @@
+{
+  "envelope_version": "2.0",
+  "message_id": "msg-fixture-malformed-missing-fields",
+  "thread_id": "fixture-malformed-missing-fields",
+  "parent_id": null,
+  "from": {
+    "eidolon": "atomos-fixtures"
+  },
+  "performative": "INFORM",
+  "artifact": {
+    "kind": "ecm/handoff-brief@0.1",
+    "schema_version": "0.1",
+    "path": "payload.md",
+    "sha256": "ff5865fcc708fde456bd44f1ccc09e027d06e89fca21cb232d5af690faa66fdf",
+    "size_bytes": 43
+  },
+  "integrity": {
+    "method": "sha256"
+  },
+  "trace": {
+    "ts": "2026-07-07T00:00:00Z",
+    "host": "claude-code",
+    "model": "n/a",
+    "tier": "standard"
+  },
+  "topic_key": "session_handoff",
+  "contains_tool_origin": false
+}

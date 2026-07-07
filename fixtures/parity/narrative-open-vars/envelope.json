@@ -1,0 +1,35 @@
+{
+  "envelope_version": "1.0",
+  "message_id": "msg-context-handoff-20260707T185253Z",
+  "thread_id": "sess-narrative-ov",
+  "parent_id": null,
+  "from": {
+    "eidolon": "eidolons-context-kernel",
+    "version": "2.2.0"
+  },
+  "to": {
+    "eidolon": "session_successor",
+    "version": "n/a"
+  },
+  "objective": "Session handoff brief for context-lifecycle succession (ECM P1): Verifying T3 tool-origin content surfaces on recall",
+  "performative": "INFORM",
+  "artifact": {
+    "kind": "ecm/handoff-brief@0.1",
+    "schema_version": "0.1",
+    "path": "handoff-20260707T185253Z.md",
+    "sha256": "47ee049875ee12e3672113b424c0389aaedd9dd0006cd5baf2816bf28f27d628",
+    "size_bytes": 482
+  },
+  "integrity": {
+    "method": "sha256",
+    "value": "47ee049875ee12e3672113b424c0389aaedd9dd0006cd5baf2816bf28f27d628"
+  },
+  "trace": {
+    "ts": "2026-07-07T18:52:53Z",
+    "host": "claude-code",
+    "model": "n/a",
+    "tier": "standard"
+  },
+  "topic_key": "session_handoff",
+  "contains_tool_origin": true
+}

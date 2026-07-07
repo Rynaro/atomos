@@ -1,0 +1,126 @@
+# atomos CI — go vet + go test (unit + parity + fence + tool-surface) +
+# gofmt + multi-arch build check + the golden drift-guard.
+#
+# The parity gate lives inside `go test ./...` (internal/compose,
+# internal/ecl parity tests assert byte-equality against the committed
+# fixtures/parity goldens). The drift-guard step below re-derives those
+# goldens from the PROVENANCE-pinned nexus commit and fails the build on any
+# diff — a kernel change can never silently break the alternate-surface
+# claim (ADR §3.3).
+#
+# errexit-safety: GitHub runs `run:` under `bash -e`. Intentionally-non-zero
+# exit codes are captured with `ec=0; cmd || ec=$?` (a bare `cmd; ec=$?`
+# aborts on the intended non-zero before the capture).
+name: conformance
+
+on:
+  push:
+  pull_request:
+  # Weekly cron so an upstream eidolons kernel change is caught by the
+  # drift guard even when atomos itself isn't being pushed.
+  schedule:
+    - cron: "23 6 * * 1"
+
+jobs:
+  test:
+    name: vet + test + fence (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache-dependency-path: go.sum
+
+      - name: go vet
+        run: go vet ./...
+
+      # gofmt gate: the tree must be gofmt-clean. errexit-safe — the command
+      # substitution always succeeds, we assert on its (empty) output.
+      - name: gofmt gate
+        run: |
+          dirty="$(gofmt -l .)"
+          if [ -n "$dirty" ]; then
+            echo "gofmt FAIL — the following files are not gofmt-clean:" >&2
+            echo "$dirty" >&2
+            echo "Run: gofmt -w <files>" >&2
+            exit 1
+          fi
+          echo "gofmt ok: tree is formatted"
+
+      # go test ./... covers: unit tests, the T1/T2 parity suite
+      # (internal/compose, internal/ecl against fixtures/parity), the fence
+      # suite (internal/tools: TestToolSurfaceIsExactlyFenced,
+      # TestFenceNoForbiddenSurface), and the MCP tool-surface handshake
+      # tests (internal/server).
+      - name: go test ./...
+        run: go test ./... -count=1 -v
+
+  build-check:
+    name: multi-arch build check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build-only (no push) for both target platforms — catches any
+      # cross-compile / distroless-layer regression before release.yml ever
+      # runs. Mirrors tonberry's release matrix (linux/amd64 + linux/arm64).
+      - name: docker buildx build (amd64 + arm64, no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: false
+
+  drift-guard:
+    name: golden drift-guard (nexus @ PROVENANCE pin)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: atomos
+
+      - name: Read PROVENANCE-pinned nexus commit
+        id: pin
+        run: |
+          commit="$(grep '^NEXUS_COMMIT=' atomos/fixtures/parity/PROVENANCE | cut -d= -f2)"
+          if [ -z "$commit" ] || [ "$commit" = "unknown" ]; then
+            echo "::error::fixtures/parity/PROVENANCE has no usable NEXUS_COMMIT pin" >&2
+            exit 1
+          fi
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout eidolons nexus @ pinned commit (READ-ONLY oracle)
+        uses: actions/checkout@v4
+        with:
+          repository: Rynaro/eidolons
+          ref: ${{ steps.pin.outputs.commit }}
+          path: eidolons
+
+      - name: Ensure jq present
+        run: command -v jq >/dev/null 2>&1 || (sudo apt-get update -qq && sudo apt-get install -y jq)
+
+      - name: Re-derive goldens and diff
+        env:
+          EIDOLONS_NEXUS: ${{ github.workspace }}/eidolons
+        working-directory: atomos
+        run: |
+          bash scripts/regen-goldens.sh
+          if ! git diff --exit-code fixtures/parity; then
+            echo "::error title=parity drift::fixtures/parity drifted against the PROVENANCE-pinned nexus commit — the kernel oracle changed. Bump the pin deliberately (re-run regen-goldens.sh, review the diff, commit) — never silently." >&2
+            exit 1
+          fi
+          echo "drift-guard ok: fixtures/parity matches the pinned nexus commit"

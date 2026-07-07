@@ -1,0 +1,35 @@
+{
+  "envelope_version": "2.0",
+  "message_id": "msg-fixture-unsupported-algo",
+  "thread_id": "fixture-unsupported-algo",
+  "parent_id": null,
+  "from": {
+    "eidolon": "atomos-fixtures",
+    "version": "0.1.0"
+  },
+  "to": {
+    "eidolon": "session_successor",
+    "version": "n/a"
+  },
+  "objective": "Unsupported-algo fixture: integrity.method is not sha256",
+  "performative": "INFORM",
+  "artifact": {
+    "kind": "ecm/handoff-brief@0.1",
+    "schema_version": "0.1",
+    "path": "payload.md",
+    "sha256": "55d8f742b7f789a2acdfcb426d52e9d2a025d06bc2b338b9358392e65a6fcd50",
+    "size_bytes": 35
+  },
+  "integrity": {
+    "method": "md5",
+    "value": "55d8f742b7f789a2acdfcb426d52e9d2a025d06bc2b338b9358392e65a6fcd50"
+  },
+  "trace": {
+    "ts": "2026-07-07T00:00:00Z",
+    "host": "claude-code",
+    "model": "n/a",
+    "tier": "standard"
+  },
+  "topic_key": "session_handoff",
+  "contains_tool_origin": false
+}

@@ -1,0 +1,35 @@
+{
+  "envelope_version": "2.0",
+  "message_id": "msg-fixture-missing-payload",
+  "thread_id": "fixture-missing-payload",
+  "parent_id": null,
+  "from": {
+    "eidolon": "atomos-fixtures",
+    "version": "0.1.0"
+  },
+  "to": {
+    "eidolon": "session_successor",
+    "version": "n/a"
+  },
+  "objective": "Missing-payload fixture: artifact.path does not resolve and no sibling exists",
+  "performative": "INFORM",
+  "artifact": {
+    "kind": "ecm/handoff-brief@0.1",
+    "schema_version": "0.1",
+    "path": "this-file-does-not-exist.md",
+    "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "size_bytes": 0
+  },
+  "integrity": {
+    "method": "sha256",
+    "value": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "trace": {
+    "ts": "2026-07-07T00:00:00Z",
+    "host": "claude-code",
+    "model": "n/a",
+    "tier": "standard"
+  },
+  "topic_key": "session_handoff",
+  "contains_tool_origin": false
+}

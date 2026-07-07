@@ -1,0 +1,35 @@
+{
+  "envelope_version": "2.0",
+  "message_id": "msg-fixture-pass",
+  "thread_id": "fixture-pass",
+  "parent_id": null,
+  "from": {
+    "eidolon": "atomos-fixtures",
+    "version": "0.1.0"
+  },
+  "to": {
+    "eidolon": "session_successor",
+    "version": "n/a"
+  },
+  "objective": "Conformant pass fixture",
+  "performative": "INFORM",
+  "artifact": {
+    "kind": "ecm/handoff-brief@0.1",
+    "schema_version": "0.1",
+    "path": "payload.md",
+    "sha256": "b120ccadebed57976cdd6b455148672773ccad53fc4480ba11b45348915819f9",
+    "size_bytes": 33
+  },
+  "integrity": {
+    "method": "sha256",
+    "value": "b120ccadebed57976cdd6b455148672773ccad53fc4480ba11b45348915819f9"
+  },
+  "trace": {
+    "ts": "2026-07-07T00:00:00Z",
+    "host": "claude-code",
+    "model": "n/a",
+    "tier": "standard"
+  },
+  "topic_key": "session_handoff",
+  "contains_tool_origin": false
+}

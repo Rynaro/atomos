@@ -1,0 +1,5 @@
+ECM_VERSION=0.1
+NEXUS_COMMIT=9642956b6990b8919a3abadbe79acd58a673685c
+CAPTURED_VIA=eidolons context handoff --json (Rynaro/eidolons checkout, cli/src/context_handoff.sh)
+VECTORS=defaults-only fully-populated narrative-open-vars
+NOTE=ts/iso_ts/from_version are CAPTURED from the kernel run (it wall-clocks internally and stamps its own EIDOLONS_VERSION), not chosen; scripts/regen-goldens.sh back-fills them into each vector's input.json. Because every regen run mints a genuinely fresh wall-clock timestamp, the script treats brief.md/sha256 (timestamp-free) as the byte-diff-clean contract and only rewrites envelope.json/input.json's ts fields when a SEMANTIC (non-timestamp) field actually drifted.
