@@ -2,7 +2,10 @@ package server
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -11,6 +14,20 @@ import (
 	"github.com/Rynaro/atomos/internal/compose"
 	"github.com/Rynaro/atomos/internal/tools"
 )
+
+// AC-V02: internal/server.Version equals the ATOMOS_VERSION file contents —
+// closing v0.1's unpinned twin (main.Version had its own test; this constant
+// did not).
+func TestServerVersionMatchesVersionFile(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("..", "..", "ATOMOS_VERSION"))
+	if err != nil {
+		t.Fatalf("read ATOMOS_VERSION: %v", err)
+	}
+	fileVersion := strings.TrimSpace(string(data))
+	if fileVersion != Version {
+		t.Errorf("ATOMOS_VERSION file = %q, want %q (server.Version)", fileVersion, Version)
+	}
+}
 
 func connect(t *testing.T) *mcp.ClientSession {
 	t.Helper()
