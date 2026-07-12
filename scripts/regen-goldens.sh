@@ -56,8 +56,103 @@ MANIFEST_DIR="$REPO_ROOT/fixtures/parity-manifest"
 : "${EIDOLONS_NEXUS:?Set EIDOLONS_NEXUS to a Rynaro/eidolons checkout (the read-only oracle).}"
 KERNEL_ENTRY="$EIDOLONS_NEXUS/cli/eidolons"
 [ -f "$KERNEL_ENTRY" ] || { echo "regen-goldens: kernel entrypoint not found: $KERNEL_ENTRY" >&2; exit 1; }
-command -v jq >/dev/null 2>&1 || { echo "regen-goldens: jq is required" >&2; exit 1; }
 command -v git >/dev/null 2>&1 || { echo "regen-goldens: git is required" >&2; exit 1; }
+
+# ═══════════════════════════════════════════════════════════════════════
+# Provenance inputs — resolved AND validated UP FRONT, before jq is even
+# required, before either regen arm runs, and before any golden or
+# PROVENANCE itself is touched.
+#
+# The PROVENANCE stamp is an integrity CLAIM about where the goldens came
+# from. A regen run that cannot determine its own provenance must REFUSE
+# to write the stamp, not invent a placeholder: a poisoned "unknown" value
+# silently overwriting a previously-good pin is worse than a loud failure,
+# because a stamp that LOOKS present but is meaningless is indistinguishable
+# from a real one at every later stage (code review, git blame, CI). Both
+# inputs below used to have exactly this footgun — NEXUS_COMMIT had an
+# explicit `|| echo unknown` fallback (caught only LATE, in CI, by
+# .github/workflows/conformance.yml's "has no usable NEXUS_COMMIT pin"
+# check) and ECM_VERSION had none at all — nothing downstream greps for it.
+# ═══════════════════════════════════════════════════════════════════════
+
+# ecm_version: read straight from the nexus's roster/context-policy.yaml.
+# `|| true` keeps a missing-file/no-match grep exit status from tripping
+# `set -e`/`pipefail` on grep's OWN terms (an unhelpful bare bash abort) —
+# we want exactly one clear, deliberate error message below instead.
+ecm_version_line="$(grep '^ecm_version:' "$EIDOLONS_NEXUS/roster/context-policy.yaml" 2>/dev/null || true)"
+ecm_version="$(printf '%s\n' "$ecm_version_line" | sed -E 's/^ecm_version: *"?([^"]*)"?.*/\1/')"
+if [ -z "$ecm_version" ]; then
+  echo "regen-goldens: REFUSING to stamp PROVENANCE — could not resolve ecm_version." >&2
+  echo "  No non-empty 'ecm_version:' key found in:" >&2
+  echo "    $EIDOLONS_NEXUS/roster/context-policy.yaml" >&2
+  echo "  (the file may be missing, unreadable, or the key absent/empty)." >&2
+  echo "  Fix: point EIDOLONS_NEXUS at a full, readable Rynaro/eidolons checkout" >&2
+  echo "  with a non-empty 'ecm_version:' key, then re-run. No goldens were touched." >&2
+  exit 1
+fi
+
+# nexus_commit: the exact commit these goldens are captured from.
+nexus_commit="$(git -C "$EIDOLONS_NEXUS" rev-parse HEAD 2>/dev/null || true)"
+if [ -z "$nexus_commit" ]; then
+  echo "regen-goldens: REFUSING to stamp PROVENANCE — could not resolve HEAD." >&2
+  echo "  'git -C $EIDOLONS_NEXUS rev-parse HEAD' failed to produce a commit." >&2
+  echo "  This commonly means EIDOLONS_NEXUS is a checkout git refuses to read" >&2
+  echo "  (e.g. a read-only bind mount tripping git's ownership safety check)" >&2
+  echo "  or isn't a git repository at all." >&2
+  echo "  Fix: e.g. 'git config --global --add safe.directory $EIDOLONS_NEXUS'," >&2
+  echo "  or point EIDOLONS_NEXUS at a readable checkout, then re-run. No" >&2
+  echo "  goldens were touched." >&2
+  exit 1
+fi
+
+# Dirty-oracle check: goldens are captured by running the kernel from the
+# nexus WORKING TREE, but the pin records a COMMIT (`git rev-parse HEAD`
+# ignores uncommitted changes). If the working tree is dirty anywhere
+# under cli/ — the kernel's entire source tree; verified by inspection to
+# be the full transitive `source` closure of context_handoff.sh /
+# context_externalize.sh (context.sh, lib.sh, lib_context.sh,
+# lib_memory_probe.sh, and the ui/theme+panel+glyphs(+per-theme) chain
+# those source in turn) plus cli/eidolons itself — the pinned commit's
+# checked-out state differs from the tree that actually produced these
+# goldens. (cli/src/verify_envelope.sh is deliberately NOT in this closure:
+# neither `context handoff` nor `context externalize` sources or execs
+# it — it's a separate, unrelated top-level `eidolons verify-envelope`
+# command — so its dirtiness has no bearing on these goldens.)
+#
+# WARN rather than block: previewing a golden's reaction to an in-flight,
+# uncommitted nexus kernel change is a legitimate, supported workflow (e.g.
+# testing an unmerged nexus PR's downstream impact before it lands), not a
+# mistake to forbid outright. But the warning must survive past a
+# scrolling CI log, so it's ALSO stamped into PROVENANCE itself (reviewable
+# in the PR diff) whenever it fires — see the write at the bottom.
+oracle_dirty="$(git -C "$EIDOLONS_NEXUS" status --porcelain=v1 -- cli 2>/dev/null || true)"
+if [ -n "$oracle_dirty" ]; then
+  echo "regen-goldens: ────────────────────────────────────────────────────" >&2
+  echo "regen-goldens: WARNING — EIDOLONS_NEXUS has UNCOMMITTED changes under cli/:" >&2
+  echo "$oracle_dirty" | sed 's/^/regen-goldens:   /' >&2
+  echo "regen-goldens: NEXUS_COMMIT pins a commit; git rev-parse HEAD ignores this" >&2
+  echo "regen-goldens: dirty tree. CI's drift-guard re-derives from the COMMITTED" >&2
+  echo "regen-goldens: tree at the pin and WILL disagree with these goldens unless" >&2
+  echo "regen-goldens: you commit exactly this working tree to that commit first." >&2
+  echo "regen-goldens: ────────────────────────────────────────────────────" >&2
+fi
+
+# Unpushed-commit check: CI's drift-guard checks out Rynaro/eidolons at the
+# pinned commit FROM GITHUB. A pin naming a local-only commit can't be
+# checked out there — a confusing, generic actions/checkout failure
+# instead of a clear local one. Cheap and local-only (no fetch); only
+# meaningful when the checkout has a remote configured at all.
+if [ -n "$(git -C "$EIDOLONS_NEXUS" remote 2>/dev/null || true)" ]; then
+  if ! git -C "$EIDOLONS_NEXUS" branch -r --contains "$nexus_commit" 2>/dev/null | grep -q .; then
+    echo "regen-goldens: WARNING — nexus commit $nexus_commit is not reachable from" >&2
+    echo "regen-goldens:   any known remote-tracking branch (git branch -r --contains)." >&2
+    echo "regen-goldens:   If it hasn't been pushed to Rynaro/eidolons yet, CI's" >&2
+    echo "regen-goldens:   drift-guard (which checks it out FROM GITHUB) will fail to" >&2
+    echo "regen-goldens:   find it. Push the commit first, or re-run after pushing." >&2
+  fi
+fi
+
+command -v jq >/dev/null 2>&1 || { echo "regen-goldens: jq is required" >&2; exit 1; }
 
 sha256_file() {
   if command -v shasum >/dev/null 2>&1; then shasum -a 256 "$1" | awk '{print $1}';
@@ -298,19 +393,23 @@ done
 # ── Provenance stamp: ECM_VERSION (roster/context-policy.yaml) + the nexus
 # commit both trees were captured from, and both vector lists. Deterministic
 # (no wall-clock field) so it never contributes to spurious diffs across
-# repeat regen runs.
-ecm_version="$(grep '^ecm_version:' "$EIDOLONS_NEXUS/roster/context-policy.yaml" 2>/dev/null | sed -E 's/^ecm_version: *"?([^"]*)"?.*/\1/')"
-[ -n "$ecm_version" ] || ecm_version="unknown"
-nexus_commit="$(git -C "$EIDOLONS_NEXUS" rev-parse HEAD 2>/dev/null || echo unknown)"
-
-cat > "$HANDOFF_DIR/PROVENANCE" <<EOF
-ECM_VERSION=$ecm_version
-NEXUS_COMMIT=$nexus_commit
-CAPTURED_VIA=eidolons context handoff --json + eidolons context externalize --json (Rynaro/eidolons checkout, cli/src/context_handoff.sh + cli/src/context_externalize.sh)
-VECTORS=$HANDOFF_VECTORS
-MANIFEST_VECTORS=$MANIFEST_VECTORS
-NOTE=ts/iso_ts/from_version (handoff) and created_at/file_floor_reason (manifest) are CAPTURED from the kernel run (it wall-clocks internally and stamps its own EIDOLONS_VERSION), not chosen; scripts/regen-goldens.sh back-fills them into each vector's input.json. Because every regen run mints a genuinely fresh wall-clock timestamp, the script treats brief.md/sha256/advisory.json (handoff, timestamp-free) and byte comparisons with .created_at stripped (manifest, M1 — created_at is INSIDE the hashed document so there is no timestamp-free anchor for that tool) as the diff-clean contract, rewriting a golden only when a SEMANTIC (non-timestamp) field actually drifted.
-EOF
+# repeat regen runs. ecm_version/nexus_commit were already resolved (and
+# hard-failed on, if unresolvable) UP FRONT, before either arm ran — see
+# the "Provenance inputs" section above the vector lists. Written via a
+# temp file + rename so a late, unexpected failure (e.g. disk full) can
+# never leave a half-written stamp in place of a good one.
+{
+  echo "ECM_VERSION=$ecm_version"
+  echo "NEXUS_COMMIT=$nexus_commit"
+  echo "CAPTURED_VIA=eidolons context handoff --json + eidolons context externalize --json (Rynaro/eidolons checkout, cli/src/context_handoff.sh + cli/src/context_externalize.sh)"
+  echo "VECTORS=$HANDOFF_VECTORS"
+  echo "MANIFEST_VECTORS=$MANIFEST_VECTORS"
+  echo "NOTE=ts/iso_ts/from_version (handoff) and created_at/file_floor_reason (manifest) are CAPTURED from the kernel run (it wall-clocks internally and stamps its own EIDOLONS_VERSION), not chosen; scripts/regen-goldens.sh back-fills them into each vector's input.json. Because every regen run mints a genuinely fresh wall-clock timestamp, the script treats brief.md/sha256/advisory.json (handoff, timestamp-free) and byte comparisons with .created_at stripped (manifest, M1 — created_at is INSIDE the hashed document so there is no timestamp-free anchor for that tool) as the diff-clean contract, rewriting a golden only when a SEMANTIC (non-timestamp) field actually drifted."
+  if [ -n "$oracle_dirty" ]; then
+    echo "ORACLE_DIRTY_AT_CAPTURE=$(echo "$oracle_dirty" | tr '\n' ';' | sed 's/;$//')"
+  fi
+} > "$HANDOFF_DIR/PROVENANCE.tmp"
+mv "$HANDOFF_DIR/PROVENANCE.tmp" "$HANDOFF_DIR/PROVENANCE"
 
 if [ "$ANY_DRIFT" = "true" ]; then
   echo "regen-goldens: drift detected and goldens updated — review before committing." >&2
