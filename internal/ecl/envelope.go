@@ -1,9 +1,12 @@
-// Package ecl composes the ECM handoff-brief ECL envelope with a hand-rolled
-// ORDERED emitter that reproduces the bash kernel's `jq -n` byte output
-// exactly: 2-space indent, insertion order (context_handoff.sh:219-233), jq
-// string escaping (quote/backslash/control-chars escaped; forward slash and
-// non-ASCII UTF-8 left verbatim — jq does NOT HTML-escape '<','>','&' the way
-// Go's default encoding/json does), and a single trailing newline.
+// Package ecl composes the ECM handoff-brief ECL envelope, using the shared
+// internal/jsonx ORDERED emitter (2-space indent, insertion order
+// (context_handoff.sh:219-233), jq string escaping, single trailing
+// newline) to reproduce the bash kernel's `jq -n` byte output exactly. The
+// ordered-emitter primitives themselves (the jq-exact string escaper and the
+// object/array writers) moved to internal/jsonx in v0.2 so the externalize
+// manifest composer (internal/compose) can share one escaper instead of
+// growing a second, driftable one — this package now calls jsonx rather than
+// hand-rolling its own copy.
 //
 // This package is a faithful EMITTER of the shape the kernel already writes.
 // It does not define, validate against, or extend the ECL performative set or
@@ -16,6 +19,8 @@ package ecl
 import (
 	"fmt"
 	"strings"
+
+	"github.com/Rynaro/atomos/internal/jsonx"
 )
 
 // Parity-critical constants (verbatim, never derived from ATOMOS_VERSION or
@@ -131,115 +136,46 @@ func New(messageID, threadID, fromVersion, artifactPath, sha string, sizeBytes i
 func (e Envelope) Marshal() []byte {
 	var b strings.Builder
 	b.WriteString("{\n")
-	writeStr(&b, 1, "envelope_version", e.EnvelopeVersion, true)
-	writeStr(&b, 1, "message_id", e.MessageID, true)
-	writeStr(&b, 1, "thread_id", e.ThreadID, true)
-	writeRaw(&b, 1, "parent_id", "null", true)
+	jsonx.WriteStr(&b, 1, "envelope_version", e.EnvelopeVersion, true)
+	jsonx.WriteStr(&b, 1, "message_id", e.MessageID, true)
+	jsonx.WriteStr(&b, 1, "thread_id", e.ThreadID, true)
+	jsonx.WriteRaw(&b, 1, "parent_id", "null", true)
 
-	writeObjOpen(&b, 1, "from")
-	writeStr(&b, 2, "eidolon", e.From.Eidolon, true)
-	writeStr(&b, 2, "version", e.From.Version, false)
-	writeObjClose(&b, 1, true)
+	jsonx.WriteObjOpen(&b, 1, "from")
+	jsonx.WriteStr(&b, 2, "eidolon", e.From.Eidolon, true)
+	jsonx.WriteStr(&b, 2, "version", e.From.Version, false)
+	jsonx.WriteObjClose(&b, 1, true)
 
-	writeObjOpen(&b, 1, "to")
-	writeStr(&b, 2, "eidolon", e.To.Eidolon, true)
-	writeStr(&b, 2, "version", e.To.Version, false)
-	writeObjClose(&b, 1, true)
+	jsonx.WriteObjOpen(&b, 1, "to")
+	jsonx.WriteStr(&b, 2, "eidolon", e.To.Eidolon, true)
+	jsonx.WriteStr(&b, 2, "version", e.To.Version, false)
+	jsonx.WriteObjClose(&b, 1, true)
 
-	writeStr(&b, 1, "objective", e.Objective, true)
-	writeStr(&b, 1, "performative", e.Performative, true)
+	jsonx.WriteStr(&b, 1, "objective", e.Objective, true)
+	jsonx.WriteStr(&b, 1, "performative", e.Performative, true)
 
-	writeObjOpen(&b, 1, "artifact")
-	writeStr(&b, 2, "kind", e.Artifact.Kind, true)
-	writeStr(&b, 2, "schema_version", e.Artifact.SchemaVersion, true)
-	writeStr(&b, 2, "path", e.Artifact.Path, true)
-	writeStr(&b, 2, "sha256", e.Artifact.SHA256, true)
-	writeRaw(&b, 2, "size_bytes", fmt.Sprintf("%d", e.Artifact.SizeBytes), false)
-	writeObjClose(&b, 1, true)
+	jsonx.WriteObjOpen(&b, 1, "artifact")
+	jsonx.WriteStr(&b, 2, "kind", e.Artifact.Kind, true)
+	jsonx.WriteStr(&b, 2, "schema_version", e.Artifact.SchemaVersion, true)
+	jsonx.WriteStr(&b, 2, "path", e.Artifact.Path, true)
+	jsonx.WriteStr(&b, 2, "sha256", e.Artifact.SHA256, true)
+	jsonx.WriteRaw(&b, 2, "size_bytes", fmt.Sprintf("%d", e.Artifact.SizeBytes), false)
+	jsonx.WriteObjClose(&b, 1, true)
 
-	writeObjOpen(&b, 1, "integrity")
-	writeStr(&b, 2, "method", e.Integrity.Method, true)
-	writeStr(&b, 2, "value", e.Integrity.Value, false)
-	writeObjClose(&b, 1, true)
+	jsonx.WriteObjOpen(&b, 1, "integrity")
+	jsonx.WriteStr(&b, 2, "method", e.Integrity.Method, true)
+	jsonx.WriteStr(&b, 2, "value", e.Integrity.Value, false)
+	jsonx.WriteObjClose(&b, 1, true)
 
-	writeObjOpen(&b, 1, "trace")
-	writeStr(&b, 2, "ts", e.Trace.TS, true)
-	writeStr(&b, 2, "host", e.Trace.Host, true)
-	writeStr(&b, 2, "model", e.Trace.Model, true)
-	writeStr(&b, 2, "tier", e.Trace.Tier, false)
-	writeObjClose(&b, 1, true)
+	jsonx.WriteObjOpen(&b, 1, "trace")
+	jsonx.WriteStr(&b, 2, "ts", e.Trace.TS, true)
+	jsonx.WriteStr(&b, 2, "host", e.Trace.Host, true)
+	jsonx.WriteStr(&b, 2, "model", e.Trace.Model, true)
+	jsonx.WriteStr(&b, 2, "tier", e.Trace.Tier, false)
+	jsonx.WriteObjClose(&b, 1, true)
 
-	writeStr(&b, 1, "topic_key", e.TopicKey, true)
-	writeRaw(&b, 1, "contains_tool_origin", fmt.Sprintf("%t", e.ContainsToolOrigin), false)
+	jsonx.WriteStr(&b, 1, "topic_key", e.TopicKey, true)
+	jsonx.WriteRaw(&b, 1, "contains_tool_origin", fmt.Sprintf("%t", e.ContainsToolOrigin), false)
 	b.WriteString("}\n")
 	return []byte(b.String())
-}
-
-func indent(level int) string { return strings.Repeat("  ", level) }
-
-func writeStr(b *strings.Builder, level int, key, value string, comma bool) {
-	writeRaw(b, level, key, jsonString(value), comma)
-}
-
-func writeRaw(b *strings.Builder, level int, key, rawValue string, comma bool) {
-	b.WriteString(indent(level))
-	b.WriteString(jsonString(key))
-	b.WriteString(": ")
-	b.WriteString(rawValue)
-	if comma {
-		b.WriteString(",")
-	}
-	b.WriteString("\n")
-}
-
-func writeObjOpen(b *strings.Builder, level int, key string) {
-	b.WriteString(indent(level))
-	b.WriteString(jsonString(key))
-	b.WriteString(": {\n")
-}
-
-func writeObjClose(b *strings.Builder, level int, comma bool) {
-	b.WriteString(indent(level))
-	b.WriteString("}")
-	if comma {
-		b.WriteString(",")
-	}
-	b.WriteString("\n")
-}
-
-// jsonString renders s as a jq-compatible JSON string literal: quote and
-// backslash escaped, control chars (<0x20) and DEL (0x7f) escaped as \u00XX
-// (with the standard \b \f \n \r \t shortcuts), everything else — including
-// non-ASCII UTF-8 and the unescaped '/','<','>','&' — passed through
-// verbatim. This mirrors jq's own string encoder, NOT Go's encoding/json
-// (which HTML-escapes '<','>','&' by default).
-func jsonString(s string) string {
-	var b strings.Builder
-	b.WriteByte('"')
-	for _, r := range s {
-		switch r {
-		case '"':
-			b.WriteString(`\"`)
-		case '\\':
-			b.WriteString(`\\`)
-		case '\n':
-			b.WriteString(`\n`)
-		case '\r':
-			b.WriteString(`\r`)
-		case '\t':
-			b.WriteString(`\t`)
-		case '\b':
-			b.WriteString(`\b`)
-		case '\f':
-			b.WriteString(`\f`)
-		default:
-			if r < 0x20 || r == 0x7f {
-				fmt.Fprintf(&b, `\u%04x`, r)
-			} else {
-				b.WriteRune(r)
-			}
-		}
-	}
-	b.WriteByte('"')
-	return b.String()
 }
