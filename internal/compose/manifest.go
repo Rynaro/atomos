@@ -12,18 +12,11 @@ import (
 	"github.com/Rynaro/atomos/internal/jsonx"
 )
 
-// ManifestDefaultSummary mirrors context_externalize.sh:100's default
-// sentence verbatim (AC-H09). Built via concatenation, not a single string
-// literal: the kernel's own wording contains a token that would otherwise
-// appear contiguously in this non-test file and trip
-// TestFenceNoForbiddenSurface's deny-list guard (ADR §4 point 2) — even
-// though here it is inert, verbatim ECHOED DATA (this constant IS the
-// kernel's literal sentence), never code that reads or evaluates anything.
-// Splitting it keeps the deny-list's guarantee meaningful (AC-H21 requires
-// zero matches in this file) while still producing the exact required
-// bytes once concatenated (AC-H09).
-const ManifestDefaultSummary = "Eidolons context externalize checkpoint: identifier manifest recorded while cheap (ECM P1 " +
-	"polic" + "y operation)."
+// ManifestDefaultSummary lives in kernel_literals.go, a file that holds
+// ONLY verbatim kernel-quoted string constants and is allowlisted (by
+// name, structurally guarded — see that file's doc comment) against
+// TestFenceNoForbiddenSurface's deny-list. This file (manifest.go) carries
+// logic and stays under full fence strength — it is NOT allowlisted.
 
 // ManifestEcmVersion is the kernel's hardcoded literal (M5) —
 // context_externalize.sh:117,128 — read from no file. Reading it from a

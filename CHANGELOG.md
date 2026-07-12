@@ -47,6 +47,21 @@ Closes the ADR-declared tool set (RAMZA build spec `docs/BUILD-SPEC-v0.2.md`).
 - `internal/tools/registry.go`: the tool surface is now closed at **four**;
   `TestToolSurfaceIsExactlyFenced` is tightened to exact equality
   (never a superset/"at least" assertion).
+- `internal/compose/kernel_literals.go`: a narrowly-scoped, structurally
+  guarded fence exemption. The kernel's verbatim default-summary sentence
+  (`context_externalize.sh:100`) contains the English word "policy" as
+  ordinary prose, which collides with `TestFenceNoForbiddenSurface`'s
+  deny-list. Rather than obscuring the token from the grep (a first-draft
+  string-concatenation trick was reviewed and rejected — it hid the byte
+  match instead of exempting it, which is exactly the "source lies about
+  its own contents" failure mode the fence exists to catch), the constant
+  now lives in its own file, allowlisted by name
+  (`internal/tools/registry_test.go`, the same mechanism v0.1's Risk R4
+  already named for this class of false positive), with a new structural
+  guard (`kernel_literals_test.go: TestKernelLiteralsAreConstOnly`, `go/ast`)
+  that fails the build if that file is ever anything but bare `const`
+  string declarations. `manifest.go` and `externalize.go` remain fully
+  fenced — only the one file holding zero logic is exempt.
 
 ### Fixed
 

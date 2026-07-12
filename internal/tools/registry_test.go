@@ -59,8 +59,22 @@ var forbidden = []struct {
 // allowlistedFiles are permitted to mention deny-listed identifiers because
 // they ARE the fence definition, its own test, or documentation ABOUT the
 // fence — never executable tool-surface code.
+//
+// kernel_literals.go (v0.2) is narrowly exempted for one reason: it holds a
+// string constant quoting the kernel's own default-summary sentence
+// verbatim (context_externalize.sh:100), which happens to contain the
+// English word "policy" as ordinary prose ("ECM P1 policy operation"), not
+// a capability. Only THAT file is exempt — never manifest.go or
+// externalize.go, which carry logic and stay under full fence strength —
+// and the exemption is itself structurally guarded:
+// internal/compose/kernel_literals_test.go's TestKernelLiteralsAreConstOnly
+// parses the file with go/ast and fails the build if it is ever anything
+// but bare `const` string declarations (no funcs, no vars, no types, no
+// imports), so the allowlist entry below cannot become a smuggling route
+// for the very surface this test excludes.
 var allowlistedFiles = map[string]bool{
-	"registry_test.go": true,
+	"registry_test.go":   true,
+	"kernel_literals.go": true,
 }
 
 // AC-F02: non-test, non-fixture Go source contains zero forbidden-surface
