@@ -1,0 +1,296 @@
+{
+  "schema": "ramza/plan-state.v1",
+  "plan": "atomos-v0-2-manifest",
+  "created_at": "2026-07-12T02:08:35Z",
+  "tier": "full",
+  "phase": "A",
+  "phases_done": [
+    "RS",
+    "S",
+    "P",
+    "E",
+    "C",
+    "T",
+    "R",
+    "T",
+    "A"
+  ],
+  "rightsize": {
+    "score": 5,
+    "computed_tier": "full",
+    "inputs": {
+      "files_est": 20,
+      "new_dep": false,
+      "public_api": true,
+      "migration": false,
+      "security": true,
+      "novel": false,
+      "stakes": "med"
+    }
+  },
+  "refine_cycles": 1,
+  "skips": [],
+  "gates": [
+    {
+      "rubric": "complexity",
+      "total": 7,
+      "dims": {
+        "scope": 2,
+        "ambiguity": 2,
+        "dependencies": 1,
+        "risk": 2
+      },
+      "verdict": "extended",
+      "at": "2026-07-12T02:08:59Z",
+      "label": "atomos-v0-2-manifest"
+    },
+    {
+      "rubric": "explore",
+      "total": 83,
+      "dims": {
+        "alignment": 9,
+        "correctness": 9,
+        "maintainability": 8,
+        "performance": 8,
+        "simplicity": 8,
+        "risk": 8,
+        "innovation": 5
+      },
+      "verdict": "solid",
+      "at": "2026-07-12T02:09:19Z",
+      "label": "H-A single-document (hash==write==return)"
+    },
+    {
+      "rubric": "explore",
+      "total": 55.5,
+      "dims": {
+        "alignment": 6,
+        "correctness": 4,
+        "maintainability": 6,
+        "performance": 8,
+        "simplicity": 5,
+        "risk": 4,
+        "innovation": 5
+      },
+      "verdict": "weak",
+      "at": "2026-07-12T02:09:19Z",
+      "label": "H-B core-hash + annotated file"
+    },
+    {
+      "rubric": "explore",
+      "total": 68,
+      "dims": {
+        "alignment": 5,
+        "correctness": 7,
+        "maintainability": 8,
+        "performance": 9,
+        "simplicity": 9,
+        "risk": 5,
+        "innovation": 4
+      },
+      "verdict": "weak",
+      "at": "2026-07-12T02:09:19Z",
+      "label": "H-C no-sidecar (literal ADR shape)"
+    },
+    {
+      "rubric": "explore",
+      "total": 57,
+      "dims": {
+        "alignment": 5,
+        "correctness": 6,
+        "maintainability": 5,
+        "performance": 8,
+        "simplicity": 7,
+        "risk": 4,
+        "innovation": 4
+      },
+      "verdict": "weak",
+      "at": "2026-07-12T02:09:19Z",
+      "label": "H-D atomos-authored fixed reason"
+    },
+    {
+      "rubric": "explore",
+      "total": 46,
+      "dims": {
+        "alignment": 3,
+        "correctness": 5,
+        "maintainability": 5,
+        "performance": 7,
+        "simplicity": 4,
+        "risk": 3,
+        "innovation": 7
+      },
+      "verdict": "weak",
+      "at": "2026-07-12T02:09:19Z",
+      "label": "H-E envelope-wrapped manifest"
+    },
+    {
+      "rubric": "confidence",
+      "total": 89.75,
+      "dims": {
+        "pattern_match": 92,
+        "requirement_clarity": 88,
+        "decomposition_stability": 85,
+        "constraint_compliance": 94
+      },
+      "verdict": "AUTO_PROCEED",
+      "at": "2026-07-12T02:16:54Z",
+      "label": "atomos-v0-2-manifest"
+    },
+    {
+      "rubric": "refine",
+      "cycle": 1,
+      "total": 3.8,
+      "min": 3,
+      "dims": {
+        "clarity": 4,
+        "completeness": 3,
+        "actionability": 5,
+        "efficiency": 4,
+        "testability": 3
+      },
+      "verdict": "pass",
+      "at": "2026-07-12T02:28:21Z",
+      "label": "critic: atomos-v0-2-manifest"
+    },
+    {
+      "rubric": "explore",
+      "total": 79,
+      "dims": {
+        "alignment": 8,
+        "correctness": 9,
+        "maintainability": 9,
+        "performance": 8,
+        "simplicity": 7,
+        "risk": 6,
+        "innovation": 5
+      },
+      "verdict": "solid",
+      "at": "2026-07-12T02:34:54Z",
+      "label": "H-F jsonx extraction (selected)"
+    },
+    {
+      "rubric": "explore",
+      "total": 71.5,
+      "dims": {
+        "alignment": 6,
+        "correctness": 9,
+        "maintainability": 6,
+        "performance": 8,
+        "simplicity": 8,
+        "risk": 8,
+        "innovation": 3
+      },
+      "verdict": "solid",
+      "at": "2026-07-12T02:34:54Z",
+      "label": "H-G export primitives from internal/ecl in place"
+    },
+    {
+      "rubric": "explore",
+      "total": 60.5,
+      "dims": {
+        "alignment": 3,
+        "correctness": 6,
+        "maintainability": 8,
+        "performance": 9,
+        "simplicity": 9,
+        "risk": 5,
+        "innovation": 3
+      },
+      "verdict": "weak",
+      "at": "2026-07-12T02:34:54Z",
+      "label": "H-H omit file_floor_reason entirely (no input)"
+    },
+    {
+      "rubric": "refine",
+      "cycle": 1,
+      "total": 4.6,
+      "min": 4,
+      "dims": {
+        "clarity": 5,
+        "completeness": 4,
+        "actionability": 5,
+        "efficiency": 4,
+        "testability": 5
+      },
+      "verdict": "pass",
+      "at": "2026-07-12T02:38:37Z",
+      "label": "refine-1 critic F1/F2/F3/F5/F6/F9/F10/F11"
+    },
+    {
+      "rubric": "confidence",
+      "total": 91.75,
+      "dims": {
+        "pattern_match": 92,
+        "requirement_clarity": 93,
+        "decomposition_stability": 86,
+        "constraint_compliance": 96
+      },
+      "verdict": "AUTO_PROCEED",
+      "at": "2026-07-12T02:38:51Z",
+      "label": "atomos-v0-2-manifest post-refine"
+    }
+  ],
+  "amendments": [
+    {
+      "prev": "24532208adf17da93f7183d5ce615e571c1f3ac757f8bae24849bc00731d3921",
+      "new": "bb1b81b0f4cd1d63aafc2866c55e07674fe1866d6d424aa417c98ce9e5f74004",
+      "reason": "critic ramza-critic-opus48 APPROVE-WITH-FIXES: F2 (AC-H22/H23 pin the default 10-key path), F5 (every test-citing VERIFY gains a 'func TestX(' existence guard - vacuous-green class), F9 (AC-H18 binds to TestNoTimeNowInHandlerPackages), F1 (AC-I12 macOS bash-3.2 execution + AC-I13 seeded flag array), AC-I08 THEN sharpened (brief arm is NOT behaviour-preserving under flag mangling)",
+      "at": "2026-07-12T02:38:37Z"
+    },
+    {
+      "prev": "bb1b81b0f4cd1d63aafc2866c55e07674fe1866d6d424aa417c98ce9e5f74004",
+      "new": "1e36373beed472d9d21436931c2aca3d1a32f06f6fac8f3b78c14bd2b3eb674d",
+      "reason": "critic ramza-critic-opus48 batch 2: F4 (AC-H24 response object decoded from the hashed bytes), F7 (AC-H25 CR/LF split rule), F8 (AC-I14 regen refuses a trailing-newline fixture), F12 (AC-I07/I09/V03/V04/V05 VERIFYs now able to fail meaningfully), F13 (AC-I09 drift-guard sees untracked goldens), F14 (AC-H26 out_dir, AC-H27 write-error path, AC-H28 free-form reason). Landed via amendment because ramza-gate refine DENIES from phase A - refine is enterable from T only; the DENY is recorded, not bypassed.",
+      "at": "2026-07-12T02:43:06Z"
+    }
+  ],
+  "declared_scope": [
+    "cmd/*",
+    "internal/*",
+    "fixtures/*",
+    "scripts/*",
+    ".github/*",
+    "docs/*",
+    "ATOMOS_VERSION",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "criteria_sha256": "1e36373beed472d9d21436931c2aca3d1a32f06f6fac8f3b78c14bd2b3eb674d",
+  "critic": {
+    "author": "ramza",
+    "checker": "ramza-critic-opus48",
+    "at": "2026-07-12T02:28:21Z"
+  },
+  "scope_declared_at": "2026-07-12T02:16:54Z",
+  "criteria_frozen_at": "2026-07-12T02:16:54Z",
+  "open_gates": [
+    {
+      "gate": "ramza-verify-emit",
+      "verdict": "NOT_RUN",
+      "cause": "emission gate belongs to phase A, which is DENIED pending the critic record; no ECL envelope is emitted for this handoff (no ECL_VERSION in the authoring environment) and the v0.1.0 precedent (docs/BUILD-SPEC.md) carries no frontmatter",
+      "resolution": "run at A, after the critic gate clears, if the handoff is ever wrapped in an ECL envelope"
+    }
+  ],
+  "resolved_gates": [
+    {
+      "gate": "ramza-gate advance --to A",
+      "verdict": "PASS",
+      "note": "critic recorded (ramza-critic-opus48 != ramza); refine cycle 1 landed F1/F2/F3/F5/F6/F9/F10/F11",
+      "at": "2026-07-12T02:38:51Z"
+    },
+    {
+      "gate": "critic findings F4/F7/F8/F12-F14",
+      "verdict": "CLOSED",
+      "note": "critique text supplied; all 14 findings dispositioned (14 accepted, 0 rejected); landed via amendment #2",
+      "at": "2026-07-12T02:43:20Z"
+    },
+    {
+      "gate": "ramza-gate refine (cycle 2)",
+      "verdict": "DENY",
+      "message": "refine is entered from T only (current: A)",
+      "note": "obeyed, not bypassed: the sanctioned post-Assemble mechanism for a criteria change is the hash-chained ramza-freeze --amend, which is what landed batch 2. refine_cycles stays 1/3.",
+      "at": "2026-07-12T02:43:20Z"
+    }
+  ]
+}
