@@ -2,6 +2,44 @@
 
 All notable changes to atomos are documented here.
 
+## [Unreleased]
+
+### Fixed
+
+- `scripts/regen-goldens.sh`: the PROVENANCE stamp's two inputs
+  (`ECM_VERSION` from the nexus's `roster/context-policy.yaml`,
+  `NEXUS_COMMIT` from `git rev-parse HEAD`) no longer degrade silently to
+  the literal string `unknown` and overwrite a previously-good pin. Both
+  are now resolved and validated UP FRONT — before jq is even required,
+  before either regen arm runs, and before any golden or PROVENANCE itself
+  is touched — and a regen that can't resolve one now REFUSES loudly
+  (names the exact input, says what to do, exits non-zero) instead of
+  writing a poisoned stamp. `NEXUS_COMMIT=unknown` used to be caught only
+  LATE, in CI (`.github/workflows/conformance.yml`'s "has no usable
+  NEXUS_COMMIT pin" check); `ECM_VERSION=unknown` had no downstream safety
+  net at all. Reproduced the field incident exactly (a read-only
+  bind-mounted nexus checkout trips git's dubious-ownership check) to
+  confirm the new guard fires.
+- `scripts/regen-goldens.sh`: two adjacent provenance-integrity gaps
+  closed at the same capture point — (1) a dirty nexus working tree under
+  `cli/` (the kernel's full source closure for both regen arms) now prints
+  an unmissable warning AND stamps a durable `ORACLE_DIRTY_AT_CAPTURE` line
+  into PROVENANCE itself (reviewable in the PR diff, not just a scrolling
+  CI log) — warn rather than block, since previewing an in-flight nexus
+  kernel change's golden impact before committing it is a legitimate
+  workflow; (2) a nexus `HEAD` unreachable from any known remote-tracking
+  branch (a commit that hasn't been pushed yet) now warns locally instead
+  of failing confusingly in CI's `actions/checkout` step later.
+- `scripts/regen-goldens.sh`: the PROVENANCE file is now written via a
+  temp-file-then-rename, so no failure path can leave a half-written stamp
+  in place of a good one.
+- Added `scripts/regen_goldens_test.go`: shells out to the real script
+  against a scratch repo copy with one precondition broken at a time
+  (unresolvable `ecm_version`, unresolvable `git rev-parse HEAD`, a dirty
+  oracle, an unpushed commit) and asserts the guard actually fires (or, for
+  the warn-only guards, stays silent in the contrast case) and that a
+  refusal never touches a pre-existing PROVENANCE file.
+
 ## [0.2.0] — 2026-07-12
 
 Closes the ADR-declared tool set (RAMZA build spec `docs/BUILD-SPEC-v0.2.md`).
