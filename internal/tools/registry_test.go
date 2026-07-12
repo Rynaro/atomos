@@ -13,9 +13,9 @@ import (
 
 // AC-H02: the tool registry advertises exactly {compose_handoff,
 // verify_envelope, verify_pins, compose_externalize_manifest} — no more, no
-// less. This assertion is EXACT equality, element-wise, never a superset
-// check ("at least these four") — a superset assertion would silently
-// retire the closed-set guarantee, which is the one thing this test is for.
+// less. This assertion is EXACT equality, element-wise, never loosened to a
+// minimum-membership check — doing so would silently retire the closed-set
+// guarantee, which is the one thing this test is for.
 func TestToolSurfaceIsExactlyFenced(t *testing.T) {
 	want := []string{"compose_handoff", "verify_envelope", "verify_pins", "compose_externalize_manifest"}
 	got := append([]string(nil), tools.Names()...)

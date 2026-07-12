@@ -86,8 +86,18 @@ jobs:
           push: false
 
   drift-guard:
-    name: golden drift-guard (nexus @ PROVENANCE pin)
-    runs-on: ubuntu-latest
+    name: golden drift-guard (nexus @ PROVENANCE pin, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # macOS's system bash IS 3.2 — running the drift-guard here EXECUTES
+        # the empty-flag-array trap (M8/R9) on a real bash 3.2 instead of
+        # merely linting for it. A static lint provably cannot see this
+        # class of defect (AC-I12); ubuntu-latest alone let a live v0.1.0
+        # defect (regen-goldens.sh aborting on an empty FLAGS array under
+        # `set -u`) go uncaught.
+        os: [ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -111,16 +121,29 @@ jobs:
           path: eidolons
 
       - name: Ensure jq present
-        run: command -v jq >/dev/null 2>&1 || (sudo apt-get update -qq && sudo apt-get install -y jq)
+        run: |
+          command -v jq >/dev/null 2>&1 && exit 0
+          if command -v apt-get >/dev/null 2>&1; then
+            sudo apt-get update -qq && sudo apt-get install -y jq
+          elif command -v brew >/dev/null 2>&1; then
+            brew install jq
+          fi
 
-      - name: Re-derive goldens and diff
+      - name: Re-derive goldens and check for drift (incl. untracked goldens)
         env:
           EIDOLONS_NEXUS: ${{ github.workspace }}/eidolons
         working-directory: atomos
         run: |
           bash scripts/regen-goldens.sh
-          if ! git diff --exit-code fixtures/parity; then
-            echo "::error title=parity drift::fixtures/parity drifted against the PROVENANCE-pinned nexus commit — the kernel oracle changed. Bump the pin deliberately (re-run regen-goldens.sh, review the diff, commit) — never silently." >&2
+          # AC-I09: git status --porcelain --untracked-files=all over BOTH
+          # fixture trees, not git diff --exit-code — the latter is blind to
+          # an untracked golden the executor forgot to `git add`, and v0.2
+          # adds an entirely new tree (fixtures/parity-manifest/), which is
+          # exactly where that failure mode would land silently.
+          dirty="$(git status --porcelain --untracked-files=all fixtures/parity fixtures/parity-manifest)"
+          if [ -n "$dirty" ]; then
+            echo "::error title=parity drift::fixtures/parity or fixtures/parity-manifest drifted (or gained untracked files) against the PROVENANCE-pinned nexus commit — the kernel oracle changed. Bump the pin deliberately (re-run regen-goldens.sh, review the diff, commit) — never silently." >&2
+            echo "$dirty" >&2
             exit 1
           fi
-          echo "drift-guard ok: fixtures/parity matches the pinned nexus commit"
+          echo "drift-guard ok: fixtures/parity + fixtures/parity-manifest match the pinned nexus commit (${{ matrix.os }})"

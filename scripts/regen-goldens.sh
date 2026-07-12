@@ -68,23 +68,24 @@ HANDOFF_VECTORS="defaults-only fully-populated narrative-open-vars empty-section
 MANIFEST_VECTORS="manifest-defaults manifest-populated manifest-tool-origin"
 ANY_DRIFT=false
 
-# refuse_trailing_newline_entries INPUT_JSON FIELD... — AC-I14: a list
-# element ending in a newline would be silently stripped by $( ) command
-# substitution when captured back into a golden, yielding a WRONG golden
-# with no signal. Refuse to process such a fixture at all (mechanical, not
-# prose — AC-I08 exists precisely because prose-only guards get bypassed).
-refuse_trailing_newline_entries() {
-  local input="$1"
-  shift
-  local filter="["
-  local field sep=""
-  for field in "$@"; do
-    filter="${filter}${sep}.${field}[]?"
-    sep=","
-  done
-  filter="${filter}] | map(select(endswith(\"\n\"))) | length == 0"
-  jq -e "$filter" "$input" >/dev/null || {
-    echo "regen-goldens: [$input] fixture list element ends with a newline — cannot be captured faithfully" >&2
+# refuse_trailing_newline_entries_handoff / _manifest INPUT_JSON — AC-I14: a
+# list element ending in a newline would be silently stripped by $( )
+# command substitution when captured back into a golden, yielding a WRONG
+# golden with no signal. Refuse to process such a fixture at all
+# (mechanical, not prose — AC-I08 exists precisely because prose-only
+# guards get bypassed).
+refuse_trailing_newline_entries_handoff() {
+  jq -e '[.anchors[]?,.symbols[]?,.decisions[]?,.failed_approaches[]?,.open_vars[]?,.next_steps[]?]
+         | map(select(endswith("\n"))) | length == 0' "$1" >/dev/null || {
+    echo "regen-goldens: [$1] fixture list element ends with a newline — cannot be captured faithfully" >&2
+    exit 1
+  }
+}
+
+refuse_trailing_newline_entries_manifest() {
+  jq -e '[.anchors[]?,.symbols[]?,.decisions[]?,.failed_approaches[]?,.open_vars[]?]
+         | map(select(endswith("\n"))) | length == 0' "$1" >/dev/null || {
+    echo "regen-goldens: [$1] fixture list element ends with a newline — cannot be captured faithfully" >&2
     exit 1
   }
 }
@@ -97,7 +98,7 @@ for vector in $HANDOFF_VECTORS; do
   input="$vdir/input.json"
   [ -f "$input" ] || { echo "regen-goldens: missing $input" >&2; exit 1; }
 
-  refuse_trailing_newline_entries "$input" anchors symbols decisions failed_approaches open_vars next_steps
+  refuse_trailing_newline_entries_handoff "$input"
 
   # ── Build the CLI flags from input.json's SEMANTIC fields only. ts/
   # iso_ts/from_version are never fed in — they are captured FROM the run.
@@ -221,7 +222,7 @@ for vector in $MANIFEST_VECTORS; do
   input="$vdir/input.json"
   [ -f "$input" ] || { echo "regen-goldens: missing $input" >&2; exit 1; }
 
-  refuse_trailing_newline_entries "$input" anchors symbols decisions failed_approaches open_vars
+  refuse_trailing_newline_entries_manifest "$input"
 
   # created_at/ts/file_floor_reason are OUTPUT-only (captured FROM the run
   # below, backfilled after) — the kernel has no flag for any of them, so

@@ -176,22 +176,46 @@ func TestWriteSidecarFalseDryRun(t *testing.T) {
 	}
 }
 
-// AC-B11: brief estimate exceeds the 1500-token advisory target =>
+// AC-B11 / AC-I04: brief estimate exceeds the 1500-token advisory target =>
 // oversize:true with brief_md untruncated.
 func TestOversizeAdvisoryNeverTruncates(t *testing.T) {
-	// 1500 tokens * 4 bytes/token = 6000 bytes threshold; force it well over.
-	huge := strings.Repeat("x", 10000)
-	in := HandoffInput{TS: "20260101T000000Z", ISOTS: "2026-01-01T00:00:00Z", Narrative: huge, WriteSidecar: boolPtr(false)}
-	out, err := Handoff(in)
-	if err != nil {
-		t.Fatalf("Handoff: %v", err)
-	}
-	if !out.Oversize {
-		t.Errorf("expected Oversize=true, tokens_est=%d", out.TokensEst)
-	}
-	if !strings.Contains(out.BriefMD, huge) {
-		t.Errorf("brief was truncated despite oversize advisory")
-	}
+	t.Run("synthetic", func(t *testing.T) {
+		// 1500 tokens * 4 bytes/token = 6000 bytes threshold; force it well over.
+		huge := strings.Repeat("x", 10000)
+		in := HandoffInput{TS: "20260101T000000Z", ISOTS: "2026-01-01T00:00:00Z", Narrative: huge, WriteSidecar: boolPtr(false)}
+		out, err := Handoff(in)
+		if err != nil {
+			t.Fatalf("Handoff: %v", err)
+		}
+		if !out.Oversize {
+			t.Errorf("expected Oversize=true, tokens_est=%d", out.TokensEst)
+		}
+		if !strings.Contains(out.BriefMD, huge) {
+			t.Errorf("brief was truncated despite oversize advisory")
+		}
+	})
+
+	// AC-I04: the kernel-captured oversize-brief parity vector — oversize is
+	// grounded in the ORACLE's own advisory.json (kernel-captured, not
+	// atomos's arithmetic), and brief_md is byte-equal to the golden despite
+	// the oversize advisory firing.
+	t.Run("oversize-brief vector", func(t *testing.T) {
+		in := loadVectorInput(t, "oversize-brief")
+		out, err := Handoff(in)
+		if err != nil {
+			t.Fatalf("Handoff: %v", err)
+		}
+		if !out.Oversize {
+			t.Fatalf("expected Oversize=true for the oversize-brief vector, tokens_est=%d", out.TokensEst)
+		}
+		golden, err := os.ReadFile(filepath.Join(fixtureDir("oversize-brief"), "brief.md"))
+		if err != nil {
+			t.Fatalf("read golden brief.md: %v", err)
+		}
+		if out.BriefMD != string(golden) {
+			t.Errorf("oversize-brief brief_md is not byte-equal to the golden despite oversize:true")
+		}
+	})
 }
 
 // AC-B12: objective equals the fixed prefix plus the first non-blank line of
