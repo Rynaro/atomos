@@ -4,9 +4,11 @@ import (
 	"context"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"github.com/Rynaro/atomos/internal/compose"
 	"github.com/Rynaro/atomos/internal/tools"
 )
 
@@ -77,5 +79,36 @@ func TestUnknownToolRejected(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatal("expected an error calling an unregistered tool, got nil")
+	}
+}
+
+// AC-H19: a compose_externalize_manifest call omitting both created_at and
+// ts has both filled at the server seam from a SINGLE UTC clock reading —
+// compose.ExternalizeManifest itself never calls time.Now (AC-H18).
+func TestManifestTimestampSeam(t *testing.T) {
+	in := compose.ManifestInput{}
+	resolveManifestTimestamps(&in)
+	if in.CreatedAt == "" || in.TS == "" {
+		t.Fatalf("expected both CreatedAt and TS to be filled, got CreatedAt=%q TS=%q", in.CreatedAt, in.TS)
+	}
+	createdAt, err := time.Parse("2006-01-02T15:04:05Z", in.CreatedAt)
+	if err != nil {
+		t.Fatalf("parse CreatedAt: %v", err)
+	}
+	ts, err := time.Parse("20060102T150405Z", in.TS)
+	if err != nil {
+		t.Fatalf("parse TS: %v", err)
+	}
+	if !createdAt.Equal(ts) {
+		t.Errorf("CreatedAt and TS come from different clock readings: %v vs %v", createdAt, ts)
+	}
+
+	// A caller that already supplied both is left untouched (parity
+	// fixtures depend on this: frozen created_at/ts must never be
+	// overwritten).
+	in2 := compose.ManifestInput{CreatedAt: "2020-01-01T00:00:00Z", TS: "20200101T000000Z"}
+	resolveManifestTimestamps(&in2)
+	if in2.CreatedAt != "2020-01-01T00:00:00Z" || in2.TS != "20200101T000000Z" {
+		t.Errorf("resolveManifestTimestamps overwrote caller-supplied values: %+v", in2)
 	}
 }

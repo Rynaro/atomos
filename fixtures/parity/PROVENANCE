@@ -1,5 +1,6 @@
 ECM_VERSION=0.1
-NEXUS_COMMIT=9642956b6990b8919a3abadbe79acd58a673685c
-CAPTURED_VIA=eidolons context handoff --json (Rynaro/eidolons checkout, cli/src/context_handoff.sh)
-VECTORS=defaults-only fully-populated narrative-open-vars
-NOTE=ts/iso_ts/from_version are CAPTURED from the kernel run (it wall-clocks internally and stamps its own EIDOLONS_VERSION), not chosen; scripts/regen-goldens.sh back-fills them into each vector's input.json. Because every regen run mints a genuinely fresh wall-clock timestamp, the script treats brief.md/sha256 (timestamp-free) as the byte-diff-clean contract and only rewrites envelope.json/input.json's ts fields when a SEMANTIC (non-timestamp) field actually drifted.
+NEXUS_COMMIT=2e7a14c38a1b8dc0659bd4c845e60c94c0772ab5
+CAPTURED_VIA=eidolons context handoff --json + eidolons context externalize --json (Rynaro/eidolons checkout, cli/src/context_handoff.sh + cli/src/context_externalize.sh)
+VECTORS=defaults-only fully-populated narrative-open-vars empty-sections oversize-brief multiline-task-state empty-list-entries
+MANIFEST_VECTORS=manifest-defaults manifest-populated manifest-tool-origin
+NOTE=ts/iso_ts/from_version (handoff) and created_at/file_floor_reason (manifest) are CAPTURED from the kernel run (it wall-clocks internally and stamps its own EIDOLONS_VERSION), not chosen; scripts/regen-goldens.sh back-fills them into each vector's input.json. Because every regen run mints a genuinely fresh wall-clock timestamp, the script treats brief.md/sha256/advisory.json (handoff, timestamp-free) and byte comparisons with .created_at stripped (manifest, M1 — created_at is INSIDE the hashed document so there is no timestamp-free anchor for that tool) as the diff-clean contract, rewriting a golden only when a SEMANTIC (non-timestamp) field actually drifted.

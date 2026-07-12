@@ -11,10 +11,13 @@ import (
 	"github.com/Rynaro/atomos/internal/tools"
 )
 
-// AC-F01: the tool registry advertises exactly {compose_handoff,
-// verify_envelope, verify_pins} — no more, no less.
+// AC-H02: the tool registry advertises exactly {compose_handoff,
+// verify_envelope, verify_pins, compose_externalize_manifest} — no more, no
+// less. This assertion is EXACT equality, element-wise, never a superset
+// check ("at least these four") — a superset assertion would silently
+// retire the closed-set guarantee, which is the one thing this test is for.
 func TestToolSurfaceIsExactlyFenced(t *testing.T) {
-	want := []string{"compose_handoff", "verify_envelope", "verify_pins"}
+	want := []string{"compose_handoff", "verify_envelope", "verify_pins", "compose_externalize_manifest"}
 	got := append([]string(nil), tools.Names()...)
 	sort.Strings(got)
 	sortedWant := append([]string(nil), want...)
@@ -101,14 +104,17 @@ func TestFenceNoForbiddenSurface(t *testing.T) {
 	}
 }
 
-// AC-F04: no handler package calls time.Now — wall-clock enters only at the
-// single server-layer seam.
+// AC-F04/AC-H18: no handler package calls time.Now — wall-clock enters only
+// at the single server-layer seam. internal/jsonx joined the scan in v0.2
+// (the manifest emitter shares it with the envelope emitter; both must stay
+// clock-free).
 func TestNoTimeNowInHandlerPackages(t *testing.T) {
 	pkgs := []string{
 		filepath.Join("..", "compose"),
 		filepath.Join("..", "verify"),
 		filepath.Join("..", "ecl"),
 		filepath.Join("..", "hashing"),
+		filepath.Join("..", "jsonx"),
 	}
 	timeNow := regexp.MustCompile(`\btime\.Now\(`)
 	for _, dir := range pkgs {

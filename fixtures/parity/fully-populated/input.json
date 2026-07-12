@@ -1,8 +1,16 @@
 {
   "task_state": "Building atomos Track B compose_handoff parity suite",
-  "anchors": ["internal/compose/handoff.go:120", "internal/ecl/envelope.go:1"],
-  "symbols": ["BuildBrief", "ecl.Envelope"],
-  "decisions": ["Hand-roll the ordered JSON emitter instead of json.MarshalIndent"],
+  "anchors": [
+    "internal/compose/handoff.go:120",
+    "internal/ecl/envelope.go:1"
+  ],
+  "symbols": [
+    "BuildBrief",
+    "ecl.Envelope"
+  ],
+  "decisions": [
+    "Hand-roll the ordered JSON emitter instead of json.MarshalIndent"
+  ],
   "failed_approaches": [
     "Tried map[string]interface{} + json.MarshalIndent (alphabetized keys)",
     "Tried struct field reordering without escaping parity check"
@@ -13,7 +21,7 @@
   ],
   "thread_id": "atomos-fully-populated",
   "contains_tool_origin": false,
-  "ts": "20260707T185244Z",
-  "iso_ts": "2026-07-07T18:52:44Z",
-  "from_version": "2.2.0"
+  "ts": "20260712T025838Z",
+  "iso_ts": "2026-07-12T02:58:38Z",
+  "from_version": "2.7.0"
 }

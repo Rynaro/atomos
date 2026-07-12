@@ -1,8 +1,9 @@
-// Package server wires atomos's closed 3-tool set (internal/tools.Registry)
+// Package server wires atomos's closed 4-tool set (internal/tools.Registry)
 // onto an official Go MCP SDK stdio server (mirrors tonberry's
 // internal/mcpserver). This is the ONE place in the codebase allowed to call
 // time.Now — the single server-layer seam that defaults compose_handoff's
-// ts/iso_ts when the caller omits them (Track B; AC-F04 keeps every handler
+// ts/iso_ts and compose_externalize_manifest's created_at/ts when the
+// caller omits them (Track B / Track H4; AC-F04/AC-H18 keep every handler
 // package pure).
 package server
 
@@ -20,10 +21,10 @@ import (
 // ServerName is the MCP server name and its host registration key.
 const ServerName = "atomos"
 
-// Version is the atomos build version reported to MCP clients. Kept in sync
-// with ATOMOS_VERSION and cmd/atomos.Version by convention (mirrors
-// tonberry's dual-declared Version constants).
-const Version = "0.1.0"
+// Version is the atomos build version reported to MCP clients. Test-pinned
+// to ATOMOS_VERSION and cmd/atomos.Version (AC-V02 closes v0.1's unpinned
+// twin — mirrors tonberry's dual-declared Version constants).
+const Version = "0.2.0"
 
 // New constructs the MCP server with exactly the tools.Registry set
 // registered — the only tool-registration call site in the codebase.
@@ -59,6 +60,15 @@ func New() *mcp.Server {
 		return errResult(err), out, err
 	})
 
+	mcp.AddTool(s, &mcp.Tool{
+		Name:        "compose_externalize_manifest",
+		Description: tools.Description("compose_externalize_manifest"),
+	}, func(_ context.Context, _ *mcp.CallToolRequest, in compose.ManifestInput) (*mcp.CallToolResult, compose.ManifestResult, error) {
+		resolveManifestTimestamps(&in)
+		out, err := compose.ExternalizeManifest(in)
+		return errResult(err), out, err
+	})
+
 	return s
 }
 
@@ -82,6 +92,24 @@ func resolveTimestamps(in *compose.HandoffInput) {
 	}
 	if in.ISOTS == "" {
 		in.ISOTS = now.Format("2006-01-02T15:04:05Z")
+	}
+}
+
+// resolveManifestTimestamps is compose_externalize_manifest's wall-clock
+// seam (Track H4/Q4), exactly resolveTimestamps's contract:
+// compose.ExternalizeManifest itself never calls time.Now.
+// created_at/ts are frozen inputs for parity fixtures; in live use, an
+// omitted pair is filled here from one shared `now` reading.
+func resolveManifestTimestamps(in *compose.ManifestInput) {
+	if in.CreatedAt != "" && in.TS != "" {
+		return
+	}
+	now := time.Now().UTC()
+	if in.CreatedAt == "" {
+		in.CreatedAt = now.Format("2006-01-02T15:04:05Z")
+	}
+	if in.TS == "" {
+		in.TS = now.Format("20060102T150405Z")
 	}
 }
 
