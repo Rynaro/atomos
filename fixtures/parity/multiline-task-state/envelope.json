@@ -1,0 +1,35 @@
+{
+  "envelope_version": "1.0",
+  "message_id": "msg-context-handoff-20260712T025454Z",
+  "thread_id": "handoff-20260712T025454Z",
+  "parent_id": null,
+  "from": {
+    "eidolon": "eidolons-context-kernel",
+    "version": "2.7.0"
+  },
+  "to": {
+    "eidolon": "session_successor",
+    "version": "n/a"
+  },
+  "objective": "Session handoff brief for context-lifecycle succession (ECM P1): Building the v0.2 manifest tool",
+  "performative": "INFORM",
+  "artifact": {
+    "kind": "ecm/handoff-brief@0.1",
+    "schema_version": "0.1",
+    "path": "handoff-20260712T025454Z.md",
+    "sha256": "333dd084513c7193b10aef831184f2b56cc9cdec2065aca3a6468693b7bd2fde",
+    "size_bytes": 242
+  },
+  "integrity": {
+    "method": "sha256",
+    "value": "333dd084513c7193b10aef831184f2b56cc9cdec2065aca3a6468693b7bd2fde"
+  },
+  "trace": {
+    "ts": "2026-07-12T02:54:54Z",
+    "host": "claude-code",
+    "model": "n/a",
+    "tier": "standard"
+  },
+  "topic_key": "session_handoff",
+  "contains_tool_origin": false
+}

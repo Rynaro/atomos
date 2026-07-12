@@ -47,21 +47,8 @@ func TestMarshalRoundTripsAllFields(t *testing.T) {
 	}
 }
 
-func TestJSONStringEscaping(t *testing.T) {
-	cases := []struct {
-		in   string
-		want string
-	}{
-		{`a/b`, `"a/b"`},
-		{`a<b>c&d`, `"a<b>c&d"`},
-		{"a\"b\\c", `"a\"b\\c"`},
-		{"line1\nline2", `"line1\nline2"`},
-		{"tab\ttab", `"tab\ttab"`},
-		{"café", "\"café\""},
-	}
-	for _, c := range cases {
-		if got := jsonString(c.in); got != c.want {
-			t.Errorf("jsonString(%q) = %s, want %s", c.in, got, c.want)
-		}
-	}
-}
+// String-escaping coverage moved to internal/jsonx/jsonx_test.go
+// (TestJSONStringEscaping) alongside the primitives themselves (v0.2 H1
+// extraction) — this package now calls jsonx.JSONString rather than owning
+// its own copy. TestMarshalRoundTripsAllFields above still exercises the
+// escaper indirectly through Envelope.Marshal.

@@ -1,7 +1,7 @@
 // Command atomos is the stdio MCP entrypoint for the ECM compose/verify
 // executor (FORGE ADR, settled 2026-07-07):
 //
-//	atomos serve                  -> stdio MCP server (the closed 3-tool set)
+//	atomos serve                  -> stdio MCP server (the closed 4-tool set)
 //	atomos version | --version | -h | --help
 //
 // atomos is an ALTERNATE surface to the always-canonical
@@ -20,9 +20,10 @@ import (
 )
 
 // Version is the atomos build/release version, test-pinned to the
-// ATOMOS_VERSION file (AC-G02). Never stamped into a composed envelope's
-// from.version (AC-B05) — that field echoes the caller's from_version input.
-const Version = "0.1.0"
+// ATOMOS_VERSION file (AC-V01) and to internal/server.Version (AC-V02).
+// Never stamped into a composed envelope's from.version (AC-B05) — that
+// field echoes the caller's from_version input.
+const Version = "0.2.0"
 
 func main() {
 	if len(os.Args) < 2 {
@@ -52,7 +53,8 @@ func usage() {
 
 Usage:
   atomos serve
-      Run the stdio MCP server (compose_handoff, verify_envelope, verify_pins).
+      Run the stdio MCP server (compose_handoff, verify_envelope, verify_pins,
+      compose_externalize_manifest).
 
   atomos version | --version | -h | --help
       Print the ATOMOS_VERSION string.

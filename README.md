@@ -4,10 +4,10 @@
 Management](https://github.com/Rynaro/eidolons-ecm) context lifecycle) — the
 tonberry-analog for ECM the way [tonberry](https://github.com/Rynaro/tonberry)
 is the executor-analog for ESL. A thin, single-binary Go stdio MCP server
-exposing a **closed** three-tool surface: `compose_handoff`, `verify_envelope`,
-`verify_pins`.
+exposing a **closed, now complete** four-tool surface: `compose_handoff`,
+`verify_envelope`, `verify_pins`, `compose_externalize_manifest`.
 
-`ATOMOS_VERSION` = `0.1.0` · 5th sibling executor (EIIS install / ECL wire /
+`ATOMOS_VERSION` = `0.2.0` · 5th sibling executor (EIIS install / ECL wire /
 ESL lifecycle / ECM context / **atomos MCP**) · opt-in, additive.
 
 ---
@@ -29,21 +29,22 @@ below for what it structurally cannot do.
 
 ---
 
-## The 3 tools (`mcp__atomos__*`)
+## The 4 tools (`mcp__atomos__*`)
 
 | Tool | Purpose |
 |------|---------|
 | `compose_handoff` | Compose a session-handoff brief + ECL `INFORM` envelope (`ecm/handoff-brief@0.1`), byte-identical to `eidolons context handoff` for the same inputs. Writes the brief+envelope pair to `out_dir` (default `.eidolons/.context`) when `write_sidecar` is true (the default). |
 | `verify_envelope` | Recompute a payload's SHA-256 and compare it to an ECL envelope's integrity tag, reproducing the kernel's full verdict matrix: `pass` · `tamper` · `inconsistent` · `unverifiable` · `missing_payload` · `unsupported_algo` · `malformed`. Advisory only — atomos never process-exits; `blocked` is a reported flag, never enforced here. |
 | `verify_pins` | Probe a post-operation artifact for pin-marker survival (ECM spec §3.2). Advisory only: reports which pins are present/missing; never re-injects, never writes. |
+| `compose_externalize_manifest` | Build the identifier manifest that `eidolons context externalize` builds (anchors, symbols, decisions, failed approaches, open variables, `contains_tool_origin`, session, `created_at`) plus its SHA-256, and write the **file-floor** sidecar under `out_dir` (default `.eidolons/.context`) when `write_sidecar` is true (the default). Stops there: durable memory beyond that one file is out of reach from this surface — a caller wanting it uses the kernel verb directly. |
 
-The set is **closed** — `internal/tools/registry.go` is the single
-declaration site. A fourth tool is a spec revision, never a drive-by
-addition (`internal/tools/registry_test.go: TestToolSurfaceIsExactlyFenced`).
+The set is **closed at four** — `internal/tools/registry.go` is the single
+declaration site. A fifth tool is a new ADR, never a drive-by addition
+(`internal/tools/registry_test.go: TestToolSurfaceIsExactlyFenced` asserts
+exact equality, never a superset check).
 
-Non-goals for this MVP (v0.1.0): `compose_externalize_manifest` (deferred to
-v0.2), nexus rostering (`roster/mcps.yaml`, a separate ESL change in the
-nexus repo), and anything metering/policy/trigger/inject/persist.
+Non-goals: nexus rostering (`roster/mcps.yaml`, a separate ESL change in the
+nexus repo — Phase 3), and anything metering/policy/trigger/inject/persist.
 
 ---
 
@@ -54,10 +55,17 @@ nexus repo), and anything metering/policy/trigger/inject/persist.
   exactly. The brief body embeds no timestamp — it is a pure function of the
   semantic inputs — so this is the integrity anchor.
 - **T2 (envelope byte parity, achieved):** the envelope is emitted by a
-  hand-rolled **ordered** JSON writer (`internal/ecl/envelope.go`) that
-  reproduces the kernel's `jq -n` output exactly — insertion order, 2-space
-  indent, jq-compatible string escaping, trailing newline — NOT Go's
-  `json.MarshalIndent` (which sorts map keys and HTML-escapes `<`/`>`/`&`).
+  hand-rolled **ordered** JSON writer (`internal/jsonx`, shared with the
+  manifest emitter) that reproduces the kernel's `jq -n` output exactly —
+  insertion order, 2-space indent, jq-compatible string escaping, trailing
+  newline — NOT Go's `json.MarshalIndent` (which sorts map keys and
+  HTML-escapes `<`/`>`/`&`).
+- **M0 (manifest single-document rule):** `compose_externalize_manifest`
+  produces exactly one manifest document per call — `manifest_sha256` is
+  SHA-256 over the canonical bytes returned, and the sidecar file (when
+  written) carries those exact bytes. Unlike the brief, the manifest embeds
+  `created_at` (M1) — so its byte-parity fixtures are frozen-`created_at`
+  vectors, not timestamp-free ones.
 
 See `fixtures/README.md` for the full parity-vector layout and the
 documented (unused) semantic-equivalence fallback contract.
@@ -66,6 +74,8 @@ documented (unused) semantic-equivalence fallback contract.
 go test ./internal/compose -run TestParityBriefBytes
 go test ./internal/compose -run TestParityBriefSHA
 go test ./internal/ecl     -run TestEnvelopeT2Parity
+go test ./internal/compose -run TestManifestParityBytes
+go test ./internal/compose -run TestManifestParitySHA
 ```
 
 ---
@@ -90,11 +100,12 @@ calls a durable-memory backend. This is enforced four ways:
    simply no wire to metering, policy, persistence, or the host prompt
    surface even if code tried.
 4. **Pure handlers** — every tool handler is `(input) → (artifact, error)`
-   with no ambient state and no clock except an injected `ts`.
+   with no ambient state and no clock except an injected `ts`/`created_at`.
    `TestNoTimeNowInHandlerPackages` asserts `internal/compose`,
-   `internal/verify`, `internal/ecl`, and `internal/hashing` never call
-   `time.Now` — wall-clock defaulting happens at the single server-layer
-   seam (`internal/server/server.go`) only when a caller omits `ts`/`iso_ts`.
+   `internal/verify`, `internal/ecl`, `internal/hashing`, and `internal/jsonx`
+   never call `time.Now` — wall-clock defaulting happens at the single
+   server-layer seam (`internal/server/server.go`) only when a caller omits
+   `ts`/`iso_ts`/`created_at`.
 
 Recommended run shape (mirrors the tonberry MCP template):
 

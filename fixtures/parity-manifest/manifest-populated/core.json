@@ -1,0 +1,24 @@
+{
+  "ecm_version": "0.1",
+  "summary": "Checkpoint before oversized handoff\nSecond line of context.",
+  "anchors": [
+    "internal/compose/manifest.go:1",
+    "internal/compose/externalize.go:1"
+  ],
+  "symbols": [
+    "Manifest",
+    "ExternalizeManifest"
+  ],
+  "decisions": [
+    "Adopt jsonx array writer for the five list fields"
+  ],
+  "failed_approaches": [
+    "Tried reusing ecl.Envelope struct directly"
+  ],
+  "open_vars": [
+    "Does core.json ever need its own goldens beyond derivation?"
+  ],
+  "contains_tool_origin": false,
+  "session_id": "sess-manifest-populated",
+  "created_at": "2026-07-12T02:50:26Z"
+}

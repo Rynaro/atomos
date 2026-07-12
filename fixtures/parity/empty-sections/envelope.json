@@ -1,0 +1,35 @@
+{
+  "envelope_version": "1.0",
+  "message_id": "msg-context-handoff-20260712T025454Z",
+  "thread_id": "handoff-20260712T025454Z",
+  "parent_id": null,
+  "from": {
+    "eidolon": "eidolons-context-kernel",
+    "version": "2.7.0"
+  },
+  "to": {
+    "eidolon": "session_successor",
+    "version": "n/a"
+  },
+  "objective": "Session handoff brief for context-lifecycle succession (ECM P1): Reviewing ECM P1 edge cases for atomos v0.2 parity coverage",
+  "performative": "INFORM",
+  "artifact": {
+    "kind": "ecm/handoff-brief@0.1",
+    "schema_version": "0.1",
+    "path": "handoff-20260712T025454Z.md",
+    "sha256": "5f8c851161c8e2f0ab71a5aa6f425ee67a2f44f8b2abc3167130f3e930dd7da2",
+    "size_bytes": 227
+  },
+  "integrity": {
+    "method": "sha256",
+    "value": "5f8c851161c8e2f0ab71a5aa6f425ee67a2f44f8b2abc3167130f3e930dd7da2"
+  },
+  "trace": {
+    "ts": "2026-07-12T02:54:54Z",
+    "host": "claude-code",
+    "model": "n/a",
+    "tier": "standard"
+  },
+  "topic_key": "session_handoff",
+  "contains_tool_origin": false
+}

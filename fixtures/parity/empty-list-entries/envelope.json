@@ -1,0 +1,35 @@
+{
+  "envelope_version": "1.0",
+  "message_id": "msg-context-handoff-20260712T025454Z",
+  "thread_id": "handoff-20260712T025454Z",
+  "parent_id": null,
+  "from": {
+    "eidolon": "eidolons-context-kernel",
+    "version": "2.7.0"
+  },
+  "to": {
+    "eidolon": "session_successor",
+    "version": "n/a"
+  },
+  "objective": "Session handoff brief for context-lifecycle succession (ECM P1): (no task-state summary provided)",
+  "performative": "INFORM",
+  "artifact": {
+    "kind": "ecm/handoff-brief@0.1",
+    "schema_version": "0.1",
+    "path": "handoff-20260712T025454Z.md",
+    "sha256": "556896211e0b9a0644f88a26d6a8a05bd472a74756ed068f17178f86d2fd48d2",
+    "size_bytes": 274
+  },
+  "integrity": {
+    "method": "sha256",
+    "value": "556896211e0b9a0644f88a26d6a8a05bd472a74756ed068f17178f86d2fd48d2"
+  },
+  "trace": {
+    "ts": "2026-07-12T02:54:54Z",
+    "host": "claude-code",
+    "model": "n/a",
+    "tier": "standard"
+  },
+  "topic_key": "session_handoff",
+  "contains_tool_origin": false
+}

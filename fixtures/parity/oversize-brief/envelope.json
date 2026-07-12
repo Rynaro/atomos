@@ -1,0 +1,35 @@
+{
+  "envelope_version": "1.0",
+  "message_id": "msg-context-handoff-20260712T025454Z",
+  "thread_id": "handoff-20260712T025454Z",
+  "parent_id": null,
+  "from": {
+    "eidolon": "eidolons-context-kernel",
+    "version": "2.7.0"
+  },
+  "to": {
+    "eidolon": "session_successor",
+    "version": "n/a"
+  },
+  "objective": "Session handoff brief for context-lifecycle succession (ECM P1): Stress-testing the 1500-token advisory ceiling",
+  "performative": "INFORM",
+  "artifact": {
+    "kind": "ecm/handoff-brief@0.1",
+    "schema_version": "0.1",
+    "path": "handoff-20260712T025454Z.md",
+    "sha256": "1698ab2bf589735bc95136df6fc52348f89dc301b09c76bec47355b2b7962217",
+    "size_bytes": 7821
+  },
+  "integrity": {
+    "method": "sha256",
+    "value": "1698ab2bf589735bc95136df6fc52348f89dc301b09c76bec47355b2b7962217"
+  },
+  "trace": {
+    "ts": "2026-07-12T02:54:54Z",
+    "host": "claude-code",
+    "model": "n/a",
+    "tier": "standard"
+  },
+  "topic_key": "session_handoff",
+  "contains_tool_origin": false
+}
