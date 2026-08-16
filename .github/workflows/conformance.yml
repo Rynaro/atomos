@@ -147,3 +147,81 @@ jobs:
             exit 1
           fi
           echo "drift-guard ok: fixtures/parity + fixtures/parity-manifest match the pinned nexus commit (${{ matrix.os }})"
+
+  # ── drift-guard-main — closes Rynaro/atomos#5 ────────────────────────────
+  #
+  # drift-guard (above) re-derives goldens from the commit PINNED in
+  # PROVENANCE. That pin is a constant, so drift-guard is REPRODUCIBLE
+  # (same inputs -> same verdict, every run) but is structurally incapable
+  # of catching an upstream eidolons kernel change on its own — the weekly
+  # `schedule:` trigger was re-running the identical comparison against the
+  # identical frozen kernel for a month (#5: the pin sat at v2.7.0, 80
+  # commits behind, while conformance stayed green throughout).
+  #
+  # This job re-derives the SAME goldens against `Rynaro/eidolons` **main**
+  # (unpinned, moving) instead of the PROVENANCE commit. It is what actually
+  # earns the cron: a real kernel behaviour change lands here on the very
+  # next scheduled run, not "whenever someone remembers to advance the pin".
+  #
+  # ADVISORY, not required (continue-on-error) — stated reasoning, not a
+  # default: `scripts/regen-goldens.sh`'s `strip_volatile()` deliberately
+  # does NOT strip `.from.version` (envelope.json) / `.from_version`
+  # (input.json) — correct for a same-version comparison (drift-guard
+  # above), but nexus's own VERSION file advances on nearly every nexus
+  # release, independent of any actual kernel BEHAVIOUR change (this is
+  # exactly what made #5's goldens go stale in the first place: the only
+  # diff across 80 commits was that one field). A REQUIRED job wired to a
+  # moving `main` would therefore go red on most routine nexus releases —
+  # not because atomos broke, but because the version string advanced. That
+  # is precisely the "gate that fires on noise, gets silenced, then misses
+  # the real thing" failure mode this campaign exists to avoid. Advisory
+  # keeps the signal visible (a human reviewing this job's log sees exactly
+  # which fields drifted and can tell a version-only bump from genuine
+  # semantic drift at a glance — the SHA-256/`sha256`/`integrity.value`
+  # fields staying identical is the tell) without making every unrelated
+  # nexus release into a required-check failure atomos's own PRs would have
+  # to work around. If false-positive fatigue turns out not to be the
+  # dominant case in practice, flipping this to required is a one-line
+  # change (drop `continue-on-error`).
+  drift-guard-main:
+    name: golden drift-guard (nexus @ main, ADVISORY, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: atomos
+
+      - name: Checkout eidolons nexus @ main (READ-ONLY oracle, UNPINNED)
+        uses: actions/checkout@v4
+        with:
+          repository: Rynaro/eidolons
+          ref: main
+          path: eidolons
+
+      - name: Ensure jq present
+        run: |
+          command -v jq >/dev/null 2>&1 && exit 0
+          if command -v apt-get >/dev/null 2>&1; then
+            sudo apt-get update -qq && sudo apt-get install -y jq
+          elif command -v brew >/dev/null 2>&1; then
+            brew install jq
+          fi
+
+      - name: Re-derive goldens against nexus main and report drift (non-blocking)
+        env:
+          EIDOLONS_NEXUS: ${{ github.workspace }}/eidolons
+        working-directory: atomos
+        run: |
+          bash scripts/regen-goldens.sh
+          dirty="$(git status --porcelain --untracked-files=all fixtures/parity fixtures/parity-manifest)"
+          if [ -n "$dirty" ]; then
+            echo "::warning title=parity drift vs nexus main::fixtures/parity or fixtures/parity-manifest drifted against Rynaro/eidolons main (advisory — see the job's own header comment in conformance.yml for why this leg does not block). Check whether ONLY from.version/from_version/timestamp fields changed (routine nexus release, no action needed) or whether a sha256/integrity.value ALSO changed (genuine kernel drift — investigate and, once confirmed benign or fixed upstream, advance drift-guard's PROVENANCE pin in a dedicated PR)." >&2
+            echo "$dirty" >&2
+            exit 0
+          fi
+          echo "drift-guard-main ok: fixtures/parity + fixtures/parity-manifest match nexus main exactly (${{ matrix.os }})"

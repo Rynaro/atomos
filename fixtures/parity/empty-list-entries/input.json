@@ -1,7 +1,12 @@
 {
-  "anchors": ["", "internal/compose/manifest.go:42"],
-  "decisions": ["multi\nline decision"],
-  "ts": "20260712T025454Z",
-  "iso_ts": "2026-07-12T02:54:54Z",
-  "from_version": "2.7.0"
+  "anchors": [
+    "",
+    "internal/compose/manifest.go:42"
+  ],
+  "decisions": [
+    "multi\nline decision"
+  ],
+  "ts": "20260816T143121Z",
+  "iso_ts": "2026-08-16T14:31:21Z",
+  "from_version": "2.20.0"
 }

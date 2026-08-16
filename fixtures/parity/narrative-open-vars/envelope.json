@@ -1,11 +1,11 @@
 {
   "envelope_version": "1.0",
-  "message_id": "msg-context-handoff-20260712T025838Z",
+  "message_id": "msg-context-handoff-20260816T143121Z",
   "thread_id": "sess-narrative-ov",
   "parent_id": null,
   "from": {
     "eidolon": "eidolons-context-kernel",
-    "version": "2.7.0"
+    "version": "2.20.0"
   },
   "to": {
     "eidolon": "session_successor",
@@ -16,7 +16,7 @@
   "artifact": {
     "kind": "ecm/handoff-brief@0.1",
     "schema_version": "0.1",
-    "path": "handoff-20260712T025838Z.md",
+    "path": "handoff-20260816T143121Z.md",
     "sha256": "47ee049875ee12e3672113b424c0389aaedd9dd0006cd5baf2816bf28f27d628",
     "size_bytes": 482
   },
@@ -25,7 +25,7 @@
     "value": "47ee049875ee12e3672113b424c0389aaedd9dd0006cd5baf2816bf28f27d628"
   },
   "trace": {
-    "ts": "2026-07-12T02:58:38Z",
+    "ts": "2026-08-16T14:31:21Z",
     "host": "claude-code",
     "model": "n/a",
     "tier": "standard"
