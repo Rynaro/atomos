@@ -1,11 +1,11 @@
 {
   "envelope_version": "1.0",
-  "message_id": "msg-context-handoff-20260712T025454Z",
-  "thread_id": "handoff-20260712T025454Z",
+  "message_id": "msg-context-handoff-20260816T143121Z",
+  "thread_id": "handoff-20260816T143121Z",
   "parent_id": null,
   "from": {
     "eidolon": "eidolons-context-kernel",
-    "version": "2.7.0"
+    "version": "2.20.0"
   },
   "to": {
     "eidolon": "session_successor",
@@ -16,7 +16,7 @@
   "artifact": {
     "kind": "ecm/handoff-brief@0.1",
     "schema_version": "0.1",
-    "path": "handoff-20260712T025454Z.md",
+    "path": "handoff-20260816T143121Z.md",
     "sha256": "556896211e0b9a0644f88a26d6a8a05bd472a74756ed068f17178f86d2fd48d2",
     "size_bytes": 274
   },
@@ -25,7 +25,7 @@
     "value": "556896211e0b9a0644f88a26d6a8a05bd472a74756ed068f17178f86d2fd48d2"
   },
   "trace": {
-    "ts": "2026-07-12T02:54:54Z",
+    "ts": "2026-08-16T14:31:21Z",
     "host": "claude-code",
     "model": "n/a",
     "tier": "standard"

@@ -107,15 +107,48 @@ calls a durable-memory backend. This is enforced four ways:
    server-layer seam (`internal/server/server.go`) only when a caller omits
    `ts`/`iso_ts`/`created_at`.
 
-Recommended run shape (mirrors the tonberry MCP template):
+Recommended run shape — mirrors `cli/templates/mcp/atomos.mcp.json.tmpl` in
+[`Rynaro/eidolons`](https://github.com/Rynaro/eidolons), which is the
+authoritative source. `eidolons mcp install atomos` renders exactly this:
 
 ```
 docker run --rm -i \
-  --name atomos-<slug> \
-  -v <project-root>:/workspace -w /workspace \
+  --user "$(id -u):$(id -g)" \
+  --label eidolons.project=<slug> \
+  -v <project-root>:<project-root>:z -w <project-root> \
   --cap-drop ALL --security-opt no-new-privileges \
   ghcr.io/rynaro/atomos@<digest> serve
 ```
+
+Three details are load-bearing, and earlier versions of this README got each
+of them wrong — see [Known issues](#known-issues) for the symptoms:
+
+- **`--user "$(id -u):$(id -g)"`** — the image is distroless-nonroot (UID
+  65532). Without this, every write to a workspace owned by your host user
+  fails.
+- **Identity mount `<project-root>:<project-root>`, not `:/workspace`** —
+  tool arguments that carry a path (`out_dir`) are host-absolute, and the
+  server resolves them inside its own mount namespace. The container must
+  expose the project at the same absolute path the caller uses.
+- **No `--name`** — a static name makes a reconnect after a dropped stdio
+  pipe collide with the still-running `--rm` container. Per-project identity
+  rides the `--label` instead.
+
+---
+
+## Known issues
+
+| Symptom | Cause | Fixed in | Repair |
+|---|---|---|---|
+| `open …: no such file or directory` (ENOENT) on any tool taking a path argument ([#4](https://github.com/Rynaro/atomos/issues/4)) | Wiring mounted the project at `/workspace`, so a host-absolute `out_dir` did not exist in the container's namespace | eidolons **v2.12.0** (identity mount) | `eidolons mcp install atomos@<ver> --force --no-pull` |
+| `mkdir: Permission denied` / EACCES on every write ([#1](https://github.com/Rynaro/atomos/issues/1)) | Container ran as UID 65532 against a workspace owned by the host user | eidolons **v2.14.0** (`--user` pin) | `eidolons mcp install atomos@<ver> --force --no-pull` |
+| MCP `-32000` server error after a dropped connection | Static `docker --name` collided with the still-running container on reconnect | eidolons **v2.4.0** (`--name` removed) | `eidolons mcp install atomos@<ver> --force --no-pull` |
+
+All three are **wiring** defects fixed in the nexus templates, not in atomos
+itself — but a project installed before the fix keeps its old `.mcp.json`
+until it is re-rendered, because no upgrade path re-renders an install whose
+version has not changed. `eidolons mcp verify` reports this as a
+`V-ARGV-DRIFT` finding and prints the repair command.
 
 ---
 

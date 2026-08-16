@@ -1,5 +1,5 @@
 ECM_VERSION=0.1
-NEXUS_COMMIT=2e7a14c38a1b8dc0659bd4c845e60c94c0772ab5
+NEXUS_COMMIT=933f36b33afb6c0f090a6736f6587eeba47f5b11
 CAPTURED_VIA=eidolons context handoff --json + eidolons context externalize --json (Rynaro/eidolons checkout, cli/src/context_handoff.sh + cli/src/context_externalize.sh)
 VECTORS=defaults-only fully-populated narrative-open-vars empty-sections oversize-brief multiline-task-state empty-list-entries
 MANIFEST_VECTORS=manifest-defaults manifest-populated manifest-tool-origin
